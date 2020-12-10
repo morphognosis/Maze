@@ -14,11 +14,11 @@ n_epochs = 1000
 try:
   opts, args = getopt.getopt(sys.argv[1:],"hn:e:",["neurons=","epochs="])
 except getopt.GetoptError:
-  print('foraging_rnn.py [-n <neurons>] [-e <epochs>]')
+  print('maze_rnn.py [-n <neurons>] [-e <epochs>]')
   sys.exit(2)
 for opt, arg in opts:
   if opt == '-h':
-     print('foraging_rnn.py [-n <neurons>] [-e <epochs>]')
+     print('maze_rnn.py [-n <neurons>] [-e <epochs>]')
      sys.exit()
   if opt in ("-n", "--neurons"):
      n_neurons = int(arg)
@@ -26,7 +26,7 @@ for opt, arg in opts:
      n_epochs = int(arg)
 
 # prepare data
-from foraging_dataset import X_train_shape, X_train_seq, X_test_shape, X_test_seq, y_shape, y_seq
+from maze_dataset import X_train_shape, X_train_seq, X_test_shape, X_test_seq, y_shape, y_seq
 seq = array(X_train_seq)
 X = seq.reshape(X_train_shape[0], X_train_shape[1], X_train_shape[2])
 seq = array(y_seq)
