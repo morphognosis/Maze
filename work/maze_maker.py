@@ -11,57 +11,58 @@
 #    sequences to achieve success.
 # 
 # A maze consists of a sequence of rooms connected by doors.
-# There are a fixed number of doors corresponding to learner outputs.
-# A room consists of two on/off configurations:
-#    A room type.
-#    A room-specific pattern.
-# 
+# There are a fixed number of doors.
+# The learner outputs a door choice or a wait.
+# A room consists of three on/off configurations:
+#    Room type.
+#    Room marks.
+#
 # These are the types of rooms:
 # 
-# 1. Context begin room: in this room the learner is presented with a pattern with a single on value
-#    that directly corresponds to the correct door choice.
+# 1. Context begin room: in this room the learner is presented with marks having a single
+#    on value that corresponds to the correct door choice.
 #    This door leads to either a maze entry or directly to a context end room. If it leads to
-#    a maze entry room, a maze must be navigated before reaching the context end room. In the 
-#    context end room, the pattern is completely on. The learner must choose the door that was
-#    on in the context begin room.
-# 
-# 2. Maze entry room: the pattern in the maze entry room indicates the configuration of the upcoming
-#    maze sequence, consisting of maze interior rooms. The learner uses this information to navigate
+#    a maze entry room, a maze must be navigated before reaching the context end room. 
+#    In the context end room, the learner must choose the door that was marked on in the 
+#    context begin room.
+#
+# 2. Maze entry room: the marks identify the configuration of the upcoming maze sequence,
+#    consisting of maze interior rooms. The learner uses this information to navigate
 #    the maze.
 #    
-# 3. Maze interior room: the pattern in this type of room is randomly generated at maze creation and 
-#    is not related to the correct door choice; rather the pattern in the maze entry room determine the
-#    correct door choice sequence for the maze.
-#    
-# 4. Context end room: in this room the pattern is entirely in the on condition. The door choice is
-#    determined by the context begin room pattern.
-# 
+# 3. Maze interior room: the marks values in this type of room are randomly generated at maze 
+#    creation; the markings in the maze entry room determine the correct door choice sequence 
+#    to move through the maze.
+#
+# 4. Context end room: in this room the correct door choice is determined by the context begin
+#    room door markings.
+#
 # Input:
-# The input consists of the room type and room pattern components:
-# <room type><pattern>
+# The input consists of the room type and room marking components:
+# <room type><markings>
 # 
 # Room type format:
-# 1000: context begin room
-# 0100: maze entry
-# 0010: maze interior
-# 0001: context end room
-# 0000: empty room
-# 
+context_begin_room = [1,0,0,0,9]
+maze_entry = [0,1,0,0,0]
+maze_interior = [0,0,1,0,0]
+context_end_room = [0,0,0,1,0]
+empty_room = [0,0,0,0,1]
+#
 # Output: 
-# The number of outputs equals the size of the room pattern.
+# A door choice or a wait.
 # 
 # Training and testing.
 # 
 # There are three types of sequences:
 # 1. Context: context begin room and context end room. To learn context associations.
-# 2. Maze-module: maze entry and maze interior sequence. To learn maze sequences.
-# 3. Context-maze: context begin room, maze-module, and context end room.
+# 2. Context maze: context begin room, maze entry and interior sequence, and context end room.
+# 3. Independent maze: maze entry and maze interior sequence. To learn maze sequences.
 # 
-# For training, a set of the above sequences are created. This measures maze and context
+# For training, a set of the above sequences are created. This evaluates maze and context
 # learning.
 # 
-# For testing, context-mazes are created from novel context and maze-module combinations taken
-# from the training set. This measures modular context learning.
+# For testing, context-mazes are created from novel context and independent maze combinations
+# taken from the training set. This evaluates modular context learning.
 #
 # Output dataset file: maze_dataset.py
 # Contains:
@@ -77,15 +78,16 @@
 import sys, getopt
 
 # Default parameters.
+num_room_markings = 5
 num_doors = 3
 maze_interior_sequence_length = 5
 num_context_mazes = 5
-num_non_context_mazes = 5
+num_independent_mazes = 5
 
 # Get options.
-usage = 'maze_maker.py [--num_doors <number>] [--maze_interior_sequence_length <length>] [--num_context_mazes <number>] [--num_non_context_mazes <number>]'
+usage = 'maze_maker.py [--num_room_markings <quantity>] [--num_doors <quantity>] [--maze_interior_sequence_length <length>] [--num_context_mazes <quantity>] [--num_independent_mazes <quantity>]'
 try:
-  opts, args = getopt.getopt(sys.argv[1:],"h",["help","num_doors=","maze_interior_sequence_length=","num_context_mazes=","num_non_context_mazes="])
+  opts, args = getopt.getopt(sys.argv[1:],"h",["help","num_room_markings=","num_doors=","maze_interior_sequence_length=","num_context_mazes=","num_independent_mazes="])
 except getopt.GetoptError:
   print(usage)
   sys.exit(1)
@@ -93,21 +95,99 @@ for opt, arg in opts:
   if opt == '-h' or opt == '--help':
      print(usage)
      sys.exit(0)
-  if opt == "--num_doors":
+  if opt == "--num_room_markings":
+     num_room_markings = int(arg)
+  elif opt == "--num_doors":
      num_doors = int(arg)
   elif opt == "--maze_interior_sequence_length":
      maze_interior_sequence_length = int(arg)
   elif opt == "--num_context_mazes":
      num_context_mazes = int(arg)
-  elif opt == "--num_non_context_mazes":
-     num_non_context_mazes = int(arg)
+  elif opt == "--num_independent_mazes":
+     num_independent_mazes = int(arg)
   else:
      print(usage)
      sys.exit(1)
-     
-# Create training set.
-total_sequence_length = maze_interior_sequence_length + 3
+if num_room_markings <= 0:
+     print(usage)
+     sys.exit(1)
+if num_doors <= 0:
+     print(usage)
+     sys.exit(1)
+if num_room_markings < num_doors:
+    print("Number of doors cannot exceed number of room markings")
+    sys.exit(1)
+m = 2
+n = num_context_mazes  + num_independent_mazes + 1
+i = 1
+while m < n:
+    m += 2
+    i += 1
+if i > num_room_markings:
+    print("Insufficient number of room markings")
+    sys.exit(1)
+
+print("Parameters:")
+print("num_room_markings=", num_room_markings)
+print("num_doors=", num_doors)
+print("maze_interior_sequence_length=", maze_interior_sequence_length)
+print("num_context_mazes=", num_context_mazes)
+print("num_independent_mazes=", num_independent_mazes)
+
+# Create training set:
+
+# Create shapes.
+sequence_steps = maze_interior_sequence_length + 3
+num_context_sequences = num_doors
+num_context_maze_sequences = num_doors * num_context_mazes
+num_independent_maze_sequences = num_independent_mazes
+num_train_sequences = num_context_sequences + num_context_maze_sequences + num_independent_maze_sequences
+X_train_shape = [num_train_sequences, sequence_steps, num_room_markings + 5]
+X_train_seq = []
+y_train_shape = [num_train_sequences, sequence_steps, num_doors + 1]
+y_train_seq = []
 
 # Create context sequences.
+for door in range(num_context_sequences):
+    X_train_seq += context_begin_room
+    for i in range(num_room_markings):
+        if i == door:
+            X_train_seq += [1]
+        else:
+            X_train_seq += [0]
+    for i in range(num_doors + 1):
+        if i == door:
+            y_train_seq += [1]
+        else:
+            y_train_seq += [0]
+    X_train_seq += context_end_room
+    for i in range(num_room_markings):
+        X_train_seq += [1]
+    for i in range(num_doors + 1):
+        if i == door:
+            y_train_seq += [1]
+        else:
+            y_train_seq += [0]
+    for i in range(sequence_steps - 2):
+        X_train_seq += empty_room
+        for i in range(num_room_markings):
+            X_train_seq += [0]
+        for i in range(num_doors):
+            y_train_seq += [0]
+        y_train_seq += [1]
+
+# Create context-maze sequences.
 
 
+print(X_train_seq)
+print(y_train_seq)
+
+
+# Create testing set:
+
+# Create shapes.
+num_test_sequences = num_doors * num_independent_mazes
+X_test_shape = [num_test_sequences, sequence_steps, num_room_markings + 5]
+X_test_seq = []
+y_test_shape = [num_test_sequences, sequence_steps, num_doors + 1]
+y_test_seq = []
