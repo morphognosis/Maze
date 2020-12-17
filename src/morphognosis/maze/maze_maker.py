@@ -42,7 +42,7 @@
 # <room type><marks>
 # 
 # Room type format:
-context_begin_room = [1,0,0,0,9]
+context_begin_room = [1,0,0,0,0]
 maze_entry = [0,1,0,0,0]
 maze_interior = [0,0,1,0,0]
 context_end_room = [0,0,0,1,0]
@@ -64,7 +64,7 @@ empty_room = [0,0,0,0,1]
 # For testing, context-mazes are created from novel context and independent maze combinations
 # taken from the training set. This evaluates modular context learning.
 #
-# Output dataset file: maze_dataset.py
+Output_dataset_file = 'maze_dataset.py'
 # Contains:
 # X_train_shape = [<number of sequences>, <steps per sequence>, <input size>]
 # X_train_seq = [<input sequences (0|1)>]
@@ -75,6 +75,7 @@ empty_room = [0,0,0,0,1]
 # y_test_shape = [<number of sequences>, <steps per sequence>, <output size>]
 # y_test_seq = [<output sequences>]
 
+from numpy import array
 import sys, getopt, random
 
 # Default parameters.
@@ -161,7 +162,7 @@ def gen_maze():
     y_seq = []
     X_seq += maze_entry
     X_seq += gen_marks()
-    door = random.randint(0, num_doors + 1)
+    door = random.randrange(0, num_doors)
     for i in range(num_doors + 1):
         if i == door:
             y_seq += [1]
@@ -170,7 +171,7 @@ def gen_maze():
     for room in range(maze_interior_sequence_length):
         X_seq += maze_interior
         X_seq += gen_marks()
-        door = random.randint(0, num_doors + 1)
+        door = random.randrange(0, num_doors)
         for i in range(num_doors + 1):
             if i == door:
                 y_seq += [1]
@@ -315,34 +316,160 @@ for door in range(num_context_sequences):
                 y_test_seq += [0]
 
 # Write dataset.
-with open('maze_dataset.py', 'w') as f:
+if verbose:
+    print("Writing dataset to file", Output_dataset_file)
+with open(Output_dataset_file, 'w') as f:
     if verbose:
         print('Training data:')
         print('X_train_shape = [', num_train_sequences, ',', sequence_steps, ',', (num_room_marks + 5), ']')
     print('X_train_shape = [', num_train_sequences, ',', sequence_steps, ',', (num_room_marks + 5), ']', file=f)
     f.write('X_train_seq = [ ')
+    first = True
     for value in X_train_seq:
-        f.write("%s " % value)
-    f.write(']\n')
+        if first:
+            first = False
+        else:
+            f.write(", ")
+        f.write("%s" % value)
+    f.write(' ]\n')
     if verbose:
+        print('X_train_seq = [ ', end='')
+        first = True
+        for value in X_train_seq:
+            if first:
+                first = False
+            else:
+                print(", ", end='')
+            print(value, end='')
+        print(' ]')
         print('y_train_shape = [', num_train_sequences, ',', sequence_steps, ',', (num_doors + 1), ']')
     print('y_train_shape = [', num_train_sequences, ',', sequence_steps, ',', (num_doors + 1), ']', file=f)
     f.write('y_train_seq = [ ')
+    first = True
     for value in y_train_seq:
-        f.write("%s " % value)
-    f.write(']\n')
+        if first:
+            first = False
+        else:
+            f.write(", ")
+        f.write("%s" % value)
+    f.write(' ]\n')
     if verbose:
+        print('y_train_seq = [ ', end='')
+        first = True
+        for value in y_train_seq:
+            if first:
+                first = False
+            else:
+                print(", ", end='')
+            print(value, end='')
+        print(' ]')
         print('Testing data:')
         print('X_test_shape = [', num_test_sequences, ',', sequence_steps, ',', (num_room_marks + 5), ']')
     print('X_test_shape = [', num_test_sequences, ',', sequence_steps, ',', (num_room_marks + 5), ']', file=f)
     f.write('X_test_seq = [ ')
+    first = True
     for value in X_test_seq:
-        f.write("%s " % value)
-    f.write(']\n')
+        if first:
+            first = False
+        else:
+            f.write(", ")
+        f.write("%s" % value)
+    f.write(' ]\n')
     if verbose:
+        print('X_test_seq = [ ', end='')
+        first = True
+        for value in X_test_seq:
+            if first:
+                first = False
+            else:
+                print(", ", end='')
+            print(value, end='')
+        print(' ]')
         print('y_test_shape = [', num_test_sequences, ',', sequence_steps, ',', (num_doors + 1), ']')
     print('y_test_shape = [', num_test_sequences, ',', sequence_steps, ',', (num_doors + 1), ']', file=f)
     f.write('y_test_seq = [ ')
+    first = True
     for value in y_test_seq:
-        f.write("%s " % value)
-    f.write(']\n')
+        if first:
+            first = False
+        else:
+            f.write(", ")
+        f.write("%s" % value)
+    f.write(' ]\n')
+    if verbose:
+        print('y_test_seq = [ ', end='')
+        first = True
+        for value in y_test_seq:
+            if first:
+                first = False
+            else:
+                print(", ", end='')
+            print(value, end='')
+        print(' ]')
+        
+# Print interpreted dataset.
+if verbose:
+
+    print('Training mazes:')
+    seq = array(X_train_seq)
+    X = seq.reshape(X_train_shape[0], X_train_shape[1], X_train_shape[2])
+    seq = array(y_train_seq)
+    y = seq.reshape(y_train_shape[0], y_train_shape[1], y_train_shape[2])
+    for seq in range(X_train_shape[0]):
+        print('maze =', seq)
+        for step in range(X_train_shape[1]):
+            room = X[seq][step][0:5]
+            marks = X[seq][step][5:]
+            print('input: { room =', room, end='')
+            room = list(room)
+            if room == context_begin_room:
+                print(' (context_begin_room)', end='')
+            elif room == maze_entry:
+                print(' (maze_entry)        ', end='')
+            elif room == maze_interior:
+                print(' (maze_interior)     ', end='')
+            elif room == context_end_room:
+                print(' (context_end_room)  ', end='')
+            else:
+                print(' (empty_room)        ', end='')
+            print(' marks =', marks, '}', end='')
+            output = y[seq][step]
+            print(' output =', output, end='')
+            door = list(output).index(1)
+            if door < num_doors:
+                s = ' (door ' + str(door) + ')'
+                print(s)
+            else:
+                print(' (wait)')
+
+    print('Testing mazes:')
+    seq = array(X_test_seq)
+    X = seq.reshape(X_test_shape[0], X_test_shape[1], X_test_shape[2])
+    seq = array(y_test_seq)
+    y = seq.reshape(y_test_shape[0], y_test_shape[1], y_test_shape[2])
+    for seq in range(X_test_shape[0]):
+        print('maze =', seq)
+        for step in range(X_test_shape[1]):
+            room = X[seq][step][0:5]
+            marks = X[seq][step][5:]
+            print('input: { room =', room, end='')
+            room = list(room)
+            if room == context_begin_room:
+                print(' (context_begin_room)', end='')
+            elif room == maze_entry:
+                print(' (maze_entry)        ', end='')
+            elif room == maze_interior:
+                print(' (maze_interior)     ', end='')
+            elif room == context_end_room:
+                print(' (context_end_room)  ', end='')
+            else:
+                print(' (empty_room)        ', end='')
+            print(' marks =', marks, '}', end='')
+            output = y[seq][step]
+            print(' output =', output, end='')
+            door = list(output).index(1)
+            if door < num_doors:
+                s = ' (door ' + str(door) + ')'
+                print(s)
+            else:
+                print(' (wait)')
