@@ -61,7 +61,8 @@ empty_room = [0,0,0,0,1]
 # For testing, context-mazes are created from novel context and independent maze combinations
 # taken from the training set. This evaluates modular context learning.
 #
-Output_dataset_file = 'maze_dataset.py'
+# Output dataset files:
+output_dataset_module = 'maze_dataset.py'
 # Contains:
 # X_train_shape = [<number of sequences>, <steps per sequence>, <input size>]
 # X_train_seq = [<input sequences (0|1)>]
@@ -71,6 +72,20 @@ Output_dataset_file = 'maze_dataset.py'
 # X_test_seq = [<input sequences (0|1)>]
 # y_test_shape = [<number of sequences>, <steps per sequence>, <output size>]
 # y_test_seq = [<output sequences>]
+output_dataset_csv = 'maze_dataset.csv'
+# Contains:
+# Training input shape and sequences:
+# <number of sequences>, <steps per sequence>, <input size>
+# <input sequences (0|1)>
+# Training output shape and sequences:
+# <number of sequences>, <steps per sequence>, <output size>
+# <output sequences>]
+# Testing input shape and sequences:
+# <number of sequences>, <steps per sequence>, <input size>
+# input sequences (0|1)>
+# Testing output shape and sequences:
+# <number of sequences>, <steps per sequence>, <output size>
+# <output sequences>
 
 from numpy import array
 import sys, getopt, random
@@ -330,21 +345,25 @@ for door in range(num_context_sequences):
 
 # Write dataset.
 if verbose:
-    print("Writing dataset to file", Output_dataset_file)
-with open(Output_dataset_file, 'w') as f:
+    print("Writing dataset to ", output_dataset_module, "and ", output_dataset_csv)
+with open(output_dataset_module, 'w') as module, open(output_dataset_csv, 'w') as csv:
     if verbose:
         print('Training data:')
         print('X_train_shape = [', num_train_sequences, ',', sequence_steps, ',', num_inputs, ']')
-    print('X_train_shape = [', num_train_sequences, ',', sequence_steps, ',', num_inputs, ']', file=f)
-    f.write('X_train_seq = [ ')
+    print('X_train_shape = [', num_train_sequences, ',', sequence_steps, ',', num_inputs, ']', file=module)
+    print(num_train_sequences, ',', sequence_steps, ',', num_inputs, sep='', file=csv)
+    module.write('X_train_seq = [ ')
     first = True
     for value in X_train_seq:
         if first:
             first = False
         else:
-            f.write(", ")
-        f.write("%s" % value)
-    f.write(' ]\n')
+            module.write(", ")
+            csv.write(",")
+        module.write("%s" % value)
+        csv.write("%s" % value)
+    module.write(' ]\n')
+    csv.write('\n')
     if verbose:
         print('X_train_seq = [ ', end='')
         first = True
@@ -356,16 +375,20 @@ with open(Output_dataset_file, 'w') as f:
             print(value, end='')
         print(' ]')
         print('y_train_shape = [', num_train_sequences, ',', sequence_steps, ',', num_outputs, ']')
-    print('y_train_shape = [', num_train_sequences, ',', sequence_steps, ',', num_outputs, ']', file=f)
-    f.write('y_train_seq = [ ')
+    print('y_train_shape = [', num_train_sequences, ',', sequence_steps, ',', num_outputs, ']', file=module)
+    print(num_train_sequences, ',', sequence_steps, ',', num_outputs, sep='', file=csv)
+    module.write('y_train_seq = [ ')
     first = True
     for value in y_train_seq:
         if first:
             first = False
         else:
-            f.write(", ")
-        f.write("%s" % value)
-    f.write(' ]\n')
+            module.write(", ")
+            csv.write(",")
+        module.write("%s" % value)
+        csv.write("%s" % value)
+    module.write(' ]\n')
+    csv.write('\n')
     if verbose:
         print('y_train_seq = [ ', end='')
         first = True
@@ -378,16 +401,20 @@ with open(Output_dataset_file, 'w') as f:
         print(' ]')
         print('Testing data:')
         print('X_test_shape = [', num_test_sequences, ',', sequence_steps, ',', num_inputs, ']')
-    print('X_test_shape = [', num_test_sequences, ',', sequence_steps, ',', num_inputs, ']', file=f)
-    f.write('X_test_seq = [ ')
+    print('X_test_shape = [', num_test_sequences, ',', sequence_steps, ',', num_inputs, ']', file=module)
+    print(num_test_sequences, ',', sequence_steps, ',', num_inputs, sep='', file=csv)
+    module.write('X_test_seq = [ ')
     first = True
     for value in X_test_seq:
         if first:
             first = False
         else:
-            f.write(", ")
-        f.write("%s" % value)
-    f.write(' ]\n')
+            module.write(", ")
+            csv.write(",")
+        module.write("%s" % value)
+        csv.write("%s" % value)
+    module.write(' ]\n')
+    csv.write('\n')
     if verbose:
         print('X_test_seq = [ ', end='')
         first = True
@@ -399,16 +426,20 @@ with open(Output_dataset_file, 'w') as f:
             print(value, end='')
         print(' ]')
         print('y_test_shape = [', num_test_sequences, ',', sequence_steps, ',', num_outputs, ']')
-    print('y_test_shape = [', num_test_sequences, ',', sequence_steps, ',', num_outputs, ']', file=f)
-    f.write('y_test_seq = [ ')
+    print('y_test_shape = [', num_test_sequences, ',', sequence_steps, ',', num_outputs, ']', file=module)
+    print(num_test_sequences, ',', sequence_steps, ',', num_outputs, sep='', file=csv)
+    module.write('y_test_seq = [ ')
     first = True
     for value in y_test_seq:
         if first:
             first = False
         else:
-            f.write(", ")
-        f.write("%s" % value)
-    f.write(' ]\n')
+            module.write(", ")
+            csv.write(",")
+        module.write("%s" % value)
+        csv.write("%s" % value)
+    module.write(' ]\n')
+    csv.write('\n')
     if verbose:
         print('y_test_seq = [ ', end='')
         first = True
@@ -445,7 +476,11 @@ if verbose:
                 print(' (context_end_room)  ', end='')
             else:
                 print(' (empty_room)        ', end='')
-            print(' marks =', marks, '}', end='')
+            print(' marks =', marks[0:num_doors], end='')
+            print('', marks[num_doors:num_doors + num_room_marks], end='')
+            print('', marks[num_doors + num_room_marks:num_doors + (num_room_marks * 2)], end='')
+            print('', marks[num_doors + (num_room_marks * 2):num_doors + (num_room_marks * 2) + num_doors], end='')
+            print(' }', end='')
             output = y[seq][step]
             print(' output =', output, end='')
             door = list(output).index(1)
@@ -477,7 +512,11 @@ if verbose:
                 print(' (context_end_room)  ', end='')
             else:
                 print(' (empty_room)        ', end='')
-            print(' marks =', marks, '}', end='')
+            print(' marks =', marks[0:num_doors], end='')
+            print('', marks[num_doors:num_doors + num_room_marks], end='')
+            print('', marks[num_doors + num_room_marks:num_doors + (num_room_marks * 2)], end='')
+            print('', marks[num_doors + (num_room_marks * 2):num_doors + (num_room_marks * 2) + num_doors], end='')
+            print(' }', end='')
             output = y[seq][step]
             print(' output =', output, end='')
             door = list(output).index(1)

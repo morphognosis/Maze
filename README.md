@@ -1,1 +1,8 @@
 # Maze-learning.
+his study compares the maze-learning performance of three artificial neural network architectures: an Elman recurrent neural network, a Long Short-Term Memory (LSTM) network, and Mona, a goal-seeking neural network. The mazes are networks of distinctly marked rooms randomly interconnected by doors that open probabilistically. The mazes are used to examine two important problems related to artificial neural networks: (1) the retention of long-term state information and (2) the modular use of learned information. Addressing the former, mazes impose a context learning demand: at the beginning of the maze, an initial door choice forms a context that must be remembered until the end of the maze, where the same door must be chosen again in order to reach the goal. For the latter, the effect of modular and non-modular training is examined. In modular training, the door-associations are trained in separate trials from the intervening maze paths, and only presented together in testing trials. All networks perform well on mazes without the context learning requirement. Mona and LSTM perform well on context learning with non-modular training; Elman exhibits significantly degraded performance. Mona also performs well for modular training; both LSTM and Elman perform poorly with modular training.
+
+
+References:
+T. E. Portegys, "A Maze Learning Comparison of Elman, Long Short-Term Memory, and Mona Neural Networks", Neural Networks, 2010.
+http://tom.portegys.com/research.html#maze
+https://www.sciencedirect.com/science/article/abs/pii/S0893608009002871?via%3Dihub

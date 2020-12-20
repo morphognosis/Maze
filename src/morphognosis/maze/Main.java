@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2020 Tom Portegys (portegys@gmail.com). All rights reserved.
+ * Copyright (c) 2020-2021 Tom Portegys (portegys@gmail.com). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -26,17 +26,7 @@
 
 package morphognosis.maze;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Random;
-
-import javax.swing.UIManager;
 
 import morphognosis.Morphognosis;
 
