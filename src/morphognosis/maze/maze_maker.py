@@ -1,3 +1,5 @@
+# For conditions of distribution and use, see copyright notice in Main.java
+#
 # Maze maker.
 # 
 # Make mazes for training and testing maze learning.
@@ -345,7 +347,7 @@ for door in range(num_context_sequences):
 
 # Write dataset.
 if verbose:
-    print("Writing dataset to ", output_dataset_module, "and ", output_dataset_csv)
+    print("Writing maze dataset to ", output_dataset_module, " and ", output_dataset_csv, sep='')
 with open(output_dataset_module, 'w') as module, open(output_dataset_csv, 'w') as csv:
     if verbose:
         print('Training data:')

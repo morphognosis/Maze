@@ -1,3 +1,5 @@
+# For conditions of distribution and use, see copyright notice in Main.java
+#
 # Maze learning RNN.
 from numpy import array, argmax
 from keras.models import Sequential
