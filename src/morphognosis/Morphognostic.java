@@ -55,9 +55,6 @@ public class Morphognostic
       return(new Event(values, x, y, time));
    }
 
-
-   public int eventsWidth, eventsHeight;
-
    // Event quantities.
    public int   eventDimensions;
    public int[] eventValueDimensions;
@@ -379,7 +376,6 @@ public class Morphognostic
    // Constructors.
    public Morphognostic(int orientation,
                         int[] eventValueDimensions,
-                        int eventsWidth, int eventsHeight,
                         int NUM_NEIGHBORHOODS,
                         int[][]          NEIGHBORHOOD_DIMENSIONS,
                         int[]          NEIGHBORHOOD_DURATIONS,
@@ -387,8 +383,6 @@ public class Morphognostic
    {
       this.orientation             = orientation;
       this.eventValueDimensions    = eventValueDimensions;
-      this.eventsWidth             = eventsWidth;
-      this.eventsHeight            = eventsHeight;
       eventDimensions              = eventValueDimensions.length;
       this.NUM_NEIGHBORHOODS       = NUM_NEIGHBORHOODS;
       this.NEIGHBORHOOD_DIMENSIONS = new int[NUM_NEIGHBORHOODS][2];
@@ -407,13 +401,10 @@ public class Morphognostic
 
 
    public Morphognostic(int orientation,
-                        int[] eventValueDimensions,
-                        int eventsWidth, int eventsHeight)
+                        int[] eventValueDimensions)
    {
       this.orientation          = orientation;
       this.eventValueDimensions = eventValueDimensions;
-      this.eventsWidth          = eventsWidth;
-      this.eventsHeight         = eventsHeight;
       eventDimensions           = eventValueDimensions.length;
       init();
    }
@@ -423,7 +414,6 @@ public class Morphognostic
    public Morphognostic(int orientation,
                         int[] eventValueDimensions,
                         boolean[][] neighborhoodEventMap,
-                        int eventsWidth, int eventsHeight,
                         int NUM_NEIGHBORHOODS,
                         int[][]          NEIGHBORHOOD_DIMENSIONS,
                         int[]          NEIGHBORHOOD_DURATIONS,
@@ -431,8 +421,6 @@ public class Morphognostic
    {
       this.orientation             = orientation;
       this.eventValueDimensions    = eventValueDimensions;
-      this.eventsWidth             = eventsWidth;
-      this.eventsHeight            = eventsHeight;
       eventDimensions              = eventValueDimensions.length;
       this.NUM_NEIGHBORHOODS       = NUM_NEIGHBORHOODS;
       this.NEIGHBORHOOD_DIMENSIONS = new int[NUM_NEIGHBORHOODS][2];
@@ -453,13 +441,10 @@ public class Morphognostic
 
    public Morphognostic(int orientation,
                         int[] eventValueDimensions,
-                        boolean[][] neighborhoodEventMap,
-                        int eventsWidth, int eventsHeight)
+                        boolean[][] neighborhoodEventMap)
    {
       this.orientation          = orientation;
       this.eventValueDimensions = eventValueDimensions;
-      this.eventsWidth          = eventsWidth;
-      this.eventsHeight         = eventsHeight;
       eventDimensions           = eventValueDimensions.length;
       init(neighborhoodEventMap);
    }
@@ -591,8 +576,6 @@ public class Morphognostic
       if (BINARY_VALUE_AGGREGATION) { v = 1; }
       Utility.saveInt(output, v);
       Utility.saveInt(output, orientation);
-      Utility.saveInt(output, eventsWidth);
-      Utility.saveInt(output, eventsHeight);
       Utility.saveInt(output, eventDimensions);
       for (int d = 0; d < eventDimensions; d++)
       {
@@ -673,8 +656,6 @@ public class Morphognostic
          BINARY_VALUE_AGGREGATION = true;
       }
       int orientation     = Utility.loadInt(input);
-      int eventsWidth     = Utility.loadInt(input);
-      int eventsHeight    = Utility.loadInt(input);
       int eventDimensions = Utility.loadInt(input);
 
       int[] eventValueDimensions = new int[eventDimensions];
@@ -684,7 +665,6 @@ public class Morphognostic
       }
       Morphognostic m = new Morphognostic(orientation,
                                           eventValueDimensions,
-                                          eventsWidth, eventsHeight,
                                           NUM_NEIGHBORHOODS,
                                           NEIGHBORHOOD_DIMENSIONS,
                                           NEIGHBORHOOD_DURATIONS,
@@ -747,7 +727,6 @@ public class Morphognostic
    {
       Morphognostic m = new Morphognostic(orientation,
                                           eventValueDimensions,
-                                          eventsWidth, eventsHeight,
                                           NUM_NEIGHBORHOODS,
                                           NEIGHBORHOOD_DIMENSIONS,
                                           NEIGHBORHOOD_DURATIONS,
@@ -926,7 +905,5 @@ public class Morphognostic
          }
       }
       System.out.println("}");
-      System.out.println("eventsWidth=" + eventsWidth);
-      System.out.println("eventsHeight=" + eventsHeight);
    }
 }

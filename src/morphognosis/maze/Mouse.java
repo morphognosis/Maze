@@ -6,136 +6,97 @@ package morphognosis.maze;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Random;
 
 import morphognosis.Metamorph;
 import morphognosis.Morphognostic;
 import morphognosis.Orientation;
 import morphognosis.Utility;
+import morphognosis.Morphognostic.Neighborhood;
 
 public class Mouse
 {
-   // Properties.
-   public int     id;
-   public int     x, y, x2, y2, toX, toY;
-   public int     orientation, orientation2;
-   public boolean nectarCarry;
-   public int     nectarDistanceDisplay;
-   public boolean handlingNectar;
-   public float   returnToHiveProbability;
-   public MazeDriver   driver;
-   public int     driver;
-   public int     driverResponse;
+	// Random numbers.
    public Random  random;
 
    // Sensors.
-   public static final int HIVE_PRESENCE_INDEX          = 0;
-   public static final int NECTAR_PRESENCE_INDEX        = 1;
-   public static final int NECTAR_DANCE_DIRECTION_INDEX = 2;
-   public static final int NECTAR_DANCE_DISTANCE_INDEX  = 3;
-   public static final int NUM_SENSORS = 4;
-   float[] sensors;
+   public static int NUM_SENSORS = -1;
+   public float[] sensors;
 
    // Response.
-   // Initial responses are changing directions (see Orientation).
-   public static final int FORWARD        = Orientation.NUM_ORIENTATIONS;
-   public static final int EXTRACT_NECTAR = FORWARD + 1;
-   public static final int DEPOSIT_NECTAR = EXTRACT_NECTAR + 1;
-   public static final int DISPLAY_NECTAR_LONG_DISTANCE  = DEPOSIT_NECTAR + 1;
-   public static final int DISPLAY_NECTAR_SHORT_DISTANCE = DISPLAY_NECTAR_LONG_DISTANCE + 1;
-   public static final int WAIT          = DISPLAY_NECTAR_SHORT_DISTANCE + 1;
-   public static final int NUM_RESPONSES = WAIT + 1;
-   int response;
-
-   // Goal-seeking parameters.
-   public static final float DEPOSIT_NECTAR_GOAL_VALUE  = 1.0f;
-   public static final float GOAL_VALUE_DISCOUNT_FACTOR = 0.9f;
-
-   // Event symbols.
-   public static final int HIVE_PRESENCE_EVENT         = 0;
-   public static final int SURPLUS_NECTAR_EVENT        = 2;
-   public static final int NECTAR_LONG_DISTANCE_EVENT  = 11;
-   public static final int NECTAR_SHORT_DISTANCE_EVENT = 12;
-
+   public static int NUM_RESPONSES = -1;
+   public static int WAIT_RESPONSE = -1;   
+   public int response;
+   public int overrideResponse;
+   
+   // Driver.
+   public int     driver;
+   
    // Morphognostic.
    public Morphognostic morphognostic;
+   
+   // Metamorphs.
+   public int currentMetamorphIdx;
+   public ArrayList<Metamorph> metamorphs;
 
+   // Metamorph neural network.
+   public MetamorphNN metamorphNN;
+
+   // Metamorph dataset file name.
+   public static final String METAMORPH_DATASET_FILE_NAME = "metamorphs.dat";
+
+   // Maximum distance between equivalent morphognostics.
+   public static float EQUIVALENT_MORPHOGNOSTIC_DISTANCE = 0.0f;
+   
+   // Goal-seeking parameters.
+   public static final float SOLVE_MAZE_GOAL_VALUE  = 1.0f;
+   public static final float GOAL_VALUE_DISCOUNT_FACTOR = 0.9f;   
+   
    /*
     * Morphognostic event.
     *
-    *      Event values:
+    *      Sensory values:
     *      {
-    *              <hive presence>,
-    *              <nectar presence>,
-    *              <surplus nectar presence>,
-    *              <nectar dance direction>,
-    *              <nectar dance distance>,
-    *              <orientation>,
-    *              <nectar carry status>
+    *          <room identifier>
+    *          <context room marks>
+    *          <maze entry marks>
+    *          <maze interior marks>
+    *          <context end room marks>
     *      }
-    *      <orientation>: [<Orientation point true/false> x8]
-    *      <nectar distance>: [<distance type true/false> x<BEE_NUM_DISTANCE_VALUES>]
     */
 
-   // Debugging.
-   public static boolean debugAutopilot = false;
-   public static boolean debugDB        = false;
-   public static boolean debugNN        = false;
-
    // Constructor.
-   public HoneyBee(int id, World world, Random random)
+   public Mouse(Random random)
    {
-      this.id     = id;
-      this.world  = world;
+	   if (NUM_SENSORS == -1 || NUM_RESPONSES == -1 || WAIT_RESPONSE == -1)
+	   {
+		   System.err.println("Cannot construct mouse: invalid parameters");
+		   System.exit(1);
+	   }
+	   
       this.random = random;
 
-      // Initialize bee.
-      for (int i = 0; i < 100; i++)
-      {
-         int dx = random.nextInt(Parameters.HIVE_RADIUS + 1);
-         if (random.nextBoolean()) { dx = -dx; }
-         int dy = random.nextInt(Parameters.HIVE_RADIUS + 1);
-         if (random.nextBoolean()) { dy = -dy; }
-         x = x2 = (Parameters.WORLD_WIDTH / 2) + dx;
-         y = y2 = (Parameters.WORLD_HEIGHT / 2) + dy;
-         if (world.cells[x][y].hive && (world.cells[x][y].bee == null))
-         {
-            world.cells[x][y].bee = this;
-            break;
-         }
-         if (i == 99)
-         {
-            System.err.println("Cannot place bee in world");
-            System.exit(1);
-         }
-      }
-      orientation             = orientation2 = random.nextInt(Orientation.NUM_ORIENTATIONS);
-      nectarCarry             = false;
-      nectarDistanceDisplay   = -1;
-      handlingNectar          = false;
-      returnToHiveProbability = 0.0f;
       sensors = new float[NUM_SENSORS];
       for (int n = 0; n < NUM_SENSORS; n++)
       {
          sensors[n] = 0.0f;
-      }
-      response = WAIT;
+      }  
+      response = WAIT_RESPONSE;
+      overrideResponse = -1;
+
 
       // Initialize Morphognostic.
-      int eventDimensions =
-         1 +                                       // <hive presence>
-         1 +                                       // <nectar presence>
-         1 +                                       // <surplus nectar presence>
-         Orientation.NUM_ORIENTATIONS +            // <nectar dance direction>
-         2 +                                       // <nectar dance distance>
-         Orientation.NUM_ORIENTATIONS +            // <orientation>
-         1;                                        // <nectar carry status>
+      int eventDimensions = NUM_SENSORS;
       int[] eventValueDimensions = new int[eventDimensions];
       for (int i = 0; i < eventDimensions; i++)
       {
@@ -144,141 +105,43 @@ public class Mouse
       boolean[][] neighborhoodEventMap = new boolean[Parameters.NUM_NEIGHBORHOODS][eventDimensions];
       for (int i = 0; i < Parameters.NUM_NEIGHBORHOODS; i++)
       {
-         switch (i)
-         {
-         case 0:
             for (int j = 0; j < eventDimensions; j++)
             {
-               switch (j)
-               {
-               case SURPLUS_NECTAR_EVENT:
-               case NECTAR_LONG_DISTANCE_EVENT:
-               case NECTAR_SHORT_DISTANCE_EVENT:
-                  neighborhoodEventMap[i][j] = false;
-                  break;
-
-               default:
                   neighborhoodEventMap[i][j] = true;
-                  break;
-               }
             }
-            break;
-
-         case 1:
-            for (int j = 0; j < eventDimensions; j++)
-            {
-               switch (j)
-               {
-               case HIVE_PRESENCE_EVENT:
-               case SURPLUS_NECTAR_EVENT:
-               case NECTAR_SHORT_DISTANCE_EVENT:
-                  neighborhoodEventMap[i][j] = true;
-                  break;
-
-               default:
-                  neighborhoodEventMap[i][j] = false;
-                  break;
-               }
-            }
-            break;
-
-         case 2:
-            for (int j = 0; j < eventDimensions; j++)
-            {
-               switch (j)
-               {
-               case HIVE_PRESENCE_EVENT:
-               case SURPLUS_NECTAR_EVENT:
-               case NECTAR_LONG_DISTANCE_EVENT:
-                  neighborhoodEventMap[i][j] = true;
-                  break;
-
-               default:
-                  neighborhoodEventMap[i][j] = false;
-                  break;
-               }
-            }
-            break;
-
-         case 3:
-            for (int j = 0; j < eventDimensions; j++)
-            {
-               switch (j)
-               {
-               case HIVE_PRESENCE_EVENT:
-                  neighborhoodEventMap[i][j] = true;
-                  break;
-
-               default:
-                  neighborhoodEventMap[i][j] = false;
-                  break;
-               }
-            }
-            break;
-         }
       }
       morphognostic = new Morphognostic(Orientation.NORTH,
                                         eventValueDimensions,
                                         neighborhoodEventMap,
-                                        Parameters.WORLD_WIDTH, Parameters.WORLD_HEIGHT,
                                         Parameters.NUM_NEIGHBORHOODS,
                                         Parameters.NEIGHBORHOOD_DIMENSIONS,
                                         Parameters.NEIGHBORHOOD_DURATIONS,
                                         Parameters.BINARY_VALUE_AGGREGATION);
-
-      String[] eventNames = new String[eventDimensions];
-      eventNames[0]       = "hive presence";
-      eventNames[1]       = "nectar presence";
-      eventNames[2]       = "surplus nectar presence";
-      eventNames[3]       = "nectar dance direction north";
-      eventNames[4]       = "nectar dance direction northeast";
-      eventNames[5]       = "nectar dance direction east";
-      eventNames[6]       = "nectar dance direction southeast";
-      eventNames[7]       = "nectar dance direction south";
-      eventNames[8]       = "nectar dance direction southwest";
-      eventNames[9]       = "nectar dance direction west";
-      eventNames[10]      = "nectar dance direction northwest";
-      eventNames[11]      = "nectar dance distance long";
-      eventNames[12]      = "nectar dance distance short";
-      eventNames[13]      = "orientation north";
-      eventNames[14]      = "orientation northeast";
-      eventNames[15]      = "orientation east";
-      eventNames[16]      = "orientation southeast";
-      eventNames[17]      = "orientation south";
-      eventNames[18]      = "orientation southwest";
-      eventNames[19]      = "orientation west";
-      eventNames[20]      = "orientation northwest";
-      eventNames[21]      = "nectar carry";
-      morphognostic.nameEvents(eventNames);
-
+      
+      // Create metamorphs.
+      currentMetamorphIdx = -1;
+      metamorphs          = new ArrayList<Metamorph>();
+      
       // Initialize driver.
-      driver         = Driver.AUTOPILOT;
-      driverResponse = WAIT;
+      driver         = Driver.TRAINING_OVERRIDE;
    }
 
 
    // Reset.
    void reset()
    {
-      x                       = x2;
-      y                       = y2;
-      orientation             = orientation2;
-      nectarCarry             = false;
-      nectarDistanceDisplay   = -1;
-      handlingNectar          = false;
-      returnToHiveProbability = 0.0f;
-      world.cells[x][y].bee   = this;
       for (int i = 0; i < NUM_SENSORS; i++)
       {
          sensors[i] = 0.0f;
       }
-      response = WAIT;
+      response = WAIT_RESPONSE;
+      overrideResponse = -1;
       morphognostic.clear();
-      driverResponse = WAIT;
+      currentMetamorphIdx = -1;
    }
 
 
-   // Save bee to file.
+   // Save mouse to file.
    public void save(String filename) throws IOException
    {
       DataOutputStream writer;
@@ -296,37 +159,11 @@ public class Mouse
    }
 
 
-   // Save bee.
+   // Save mouse.
    public void save(DataOutputStream writer) throws IOException
    {
-      Utility.saveInt(writer, id);
-      Utility.saveInt(writer, x);
-      Utility.saveInt(writer, y);
-      Utility.saveInt(writer, orientation);
-      Utility.saveInt(writer, x2);
-      Utility.saveInt(writer, y2);
-      Utility.saveInt(writer, orientation2);
-      if (nectarCarry)
-      {
-         Utility.saveInt(writer, 1);
-      }
-      else
-      {
-         Utility.saveInt(writer, 0);
-      }
-      Utility.saveInt(writer, nectarDistanceDisplay);
-      if (handlingNectar)
-      {
-         Utility.saveInt(writer, 1);
-      }
-      else
-      {
-         Utility.saveInt(writer, 0);
-      }
-      Utility.saveFloat(writer, returnToHiveProbability);
       morphognostic.save(writer);
       Utility.saveInt(writer, driver);
-      Utility.saveInt(writer, driverResponse);
       writer.flush();
    }
 
@@ -349,38 +186,11 @@ public class Mouse
    }
 
 
-   // Load bee.
+   // Load mouse.
    public void load(DataInputStream reader) throws IOException
    {
-      id           = Utility.loadInt(reader);
-      x            = Utility.loadInt(reader);
-      y            = Utility.loadInt(reader);
-      orientation  = Utility.loadInt(reader);
-      x2           = Utility.loadInt(reader);
-      y2           = Utility.loadInt(reader);
-      orientation2 = Utility.loadInt(reader);
-      if (Utility.loadInt(reader) == 1)
-      {
-         nectarCarry = true;
-      }
-      else
-      {
-         nectarCarry = false;
-      }
-      nectarDistanceDisplay = Utility.loadInt(reader);
-      if (Utility.loadInt(reader) == 1)
-      {
-         handlingNectar = true;
-      }
-      else
-      {
-         handlingNectar = false;
-      }
-      returnToHiveProbability = Utility.loadFloat(reader);
       morphognostic           = Morphognostic.load(reader);
       driver                = Utility.loadInt(reader);
-      driverResponse        = Utility.loadInt(reader);
-      world.cells[x][y].bee = this;
    }
 
 
@@ -396,25 +206,10 @@ public class Mouse
       updateMorphognostic();
 
       // Respond.
-      handlingNectar = false;
       switch (driver)
       {
-      case Driver.AUTOPILOT:
-         handlingNectar = autopilotResponse(false);
-         if (debugAutopilot)
-         {
-            if (handlingNectar)
-            {
-               if (response == EXTRACT_NECTAR)
-               {
-                  try
-                  {
-                     Thread.sleep(3000);
-                  }
-                  catch (InterruptedException e) {}
-               }
-            }
-         }
+      case Driver.TRAINING_OVERRIDE:
+         response = overrideResponse;
          break;
 
       case Driver.METAMORPH_DB:
@@ -425,41 +220,19 @@ public class Mouse
          metamorphNNresponse();
          break;
 
-      case Driver.AUTOPILOT_GOAL_SEEKING:
-         handlingNectar = autopilotResponse(true);
-         if (debugAutopilot)
-         {
-            if (handlingNectar)
-            {
-               if (response == EXTRACT_NECTAR)
-               {
-                  try
-                  {
-                     Thread.sleep(3000);
-                  }
-                  catch (InterruptedException e) {}
-               }
-            }
-         }
-         break;
-
       case Driver.METAMORPH_GOAL_SEEKING_DB:
          metamorphGoalSeekingDBresponse();
          break;
 
       case Driver.METAMORPH_GOAL_SEEKING_NN:
-         response = WAIT;
-         break;
-
-      default:
-         response = driverResponse;
+         response = 0;
          break;
       }
 
-      // Update metamorphs if learning.
-      if ((driver == Driver.AUTOPILOT_GOAL_SEEKING) || ((driver == Driver.AUTOPILOT) && handlingNectar))
+      // Update metamorphs if training.
+      if (driver == Driver.TRAINING_OVERRIDE)
       {
-         world.updateMetamorphs(morphognostic, response, goalValue(sensors, response));
+        updateMetamorphs(morphognostic, response, goalValue(sensors, response));
       }
 
       return(response);
@@ -469,14 +242,7 @@ public class Mouse
    // Determine sensory-response goal value.
    public float goalValue(float[] sensors, int response)
    {
-      if ((sensors[HIVE_PRESENCE_INDEX] == 1.0f) && nectarCarry && (response == DEPOSIT_NECTAR))
-      {
-         return(DEPOSIT_NECTAR_GOAL_VALUE);
-      }
-      else
-      {
-         return(0.0f);
-      }
+	   return 0.0f;
    }
 
 
@@ -484,434 +250,20 @@ public class Mouse
    public void updateMorphognostic()
    {
       int[] eventValues = new int[morphognostic.eventDimensions];
-      eventValues[0]    = (int)sensors[HIVE_PRESENCE_INDEX];
-      eventValues[1]    = eventValues[2] = 0;
-      if (nectarCarry)
+      for (int i = 0; i < NUM_SENSORS; i++)
       {
-         // Surplus nectar?
-         if ((int)sensors[NECTAR_PRESENCE_INDEX] == 1.0f)
-         {
-            eventValues[2] = 1;
-         }
+    	  eventValues[i] = (int)sensors[i];
       }
-      else
-      {
-         // Nectar present?
-         if ((int)sensors[NECTAR_PRESENCE_INDEX] == 1.0f)
-         {
-            eventValues[1] = 1;
-         }
-      }
-      if (sensors[NECTAR_DANCE_DIRECTION_INDEX] != -1)
-      {
-         eventValues[3 + (int)sensors[NECTAR_DANCE_DIRECTION_INDEX]] = 1;
-      }
-      if (sensors[NECTAR_DANCE_DISTANCE_INDEX] != -1)
-      {
-         eventValues[3 + Orientation.NUM_ORIENTATIONS + (int)sensors[NECTAR_DANCE_DISTANCE_INDEX]] = 1;
-      }
-      eventValues[3 + Orientation.NUM_ORIENTATIONS + 2 + orientation] = 1;
-      if (nectarCarry)
-      {
-         eventValues[3 + Orientation.NUM_ORIENTATIONS + 2 + Orientation.NUM_ORIENTATIONS] = 1;
-      }
-      morphognostic.update(eventValues, x, y);
+      morphognostic.update(eventValues, 0, 0);
    }
-
-
-   // Autopilot response.
-   // Returns: true if handling nectar; false if randomly foraging.
-   public boolean autopilotResponse(boolean goalSeeking)
-   {
-      int width  = Parameters.WORLD_WIDTH;
-      int height = Parameters.WORLD_HEIGHT;
-
-      // If in hive clear probability to return to hive.
-      if (sensors[HIVE_PRESENCE_INDEX] == 1.0f)
-      {
-         returnToHiveProbability = 0.0f;
-      }
-      else
-      {
-         // Cannot locate hive?
-         if (morphognostic.locateEvent(3, HIVE_PRESENCE_EVENT, false) == -1)
-         {
-            // Drop nectar and return to hive.
-            nectarCarry = false;
-            morphognostic.clearEvent(SURPLUS_NECTAR_EVENT);
-            returnToHiveProbability = 1.0f;
-            response = moveTo(width / 2, height / 2);
-            return(false);
-         }
-      }
-
-      // Carrying nectar?
-      if (nectarCarry)
-      {
-         // In hive?
-         if (sensors[HIVE_PRESENCE_INDEX] == 1.0f)
-         {
-            // Deposit nectar.
-            response = DEPOSIT_NECTAR;
-         }
-         else
-         {
-            // Continue to hive.
-            response = moveTo(width / 2, height / 2);
-         }
-         return(true);
-      }
-
-      // Not carrying nectar.
-
-      // Found nectar to extract?
-      if (sensors[NECTAR_PRESENCE_INDEX] == 1.0f)
-      {
-         response = EXTRACT_NECTAR;
-         return(true);
-      }
-
-      // Turn at edge of world.
-      if ((toX < 0) || (toX >= width) || (toY < 0) || (toY >= height))
-      {
-         response = random.nextInt(Orientation.NUM_ORIENTATIONS);
-         return(false);
-      }
-
-      // Sense nectar dance?
-      if (sensors[NECTAR_DANCE_DIRECTION_INDEX] != -1.0f)
-      {
-         // Turn toward nectar.
-         response = (int)sensors[NECTAR_DANCE_DIRECTION_INDEX];
-         return(true);
-      }
-      else if ((morphognostic.locateEvent(2, NECTAR_LONG_DISTANCE_EVENT, false) != -1) ||
-               (morphognostic.locateEvent(1, NECTAR_SHORT_DISTANCE_EVENT, false) != -1))
-      {
-         // Move in direction of nectar.
-         response = FORWARD;
-         return(true);
-      }
-
-      // In hive?
-      if (sensors[HIVE_PRESENCE_INDEX] == 1.0f)
-      {
-         // Surplus nectar short distance detected?
-         int o = morphognostic.locateEvent(1, SURPLUS_NECTAR_EVENT, false);
-         if ((o != -1) && (o < Orientation.NUM_ORIENTATIONS))
-         {
-            // Orient toward nectar?
-            if (o != orientation)
-            {
-               response = o;
-               return(true);
-            }
-
-            // Dance display of nectar short distance to bees in hive.
-            response = DISPLAY_NECTAR_SHORT_DISTANCE;
-            return(true);
-         }
-
-         // Check for surplus long distance nectar.
-         o = morphognostic.locateEvent(2, SURPLUS_NECTAR_EVENT, false);
-         if ((o != -1) && (o < Orientation.NUM_ORIENTATIONS))
-         {
-            // Orient toward nectar?
-            if (o != orientation)
-            {
-               response = o;
-               return(true);
-            }
-
-            // Dance display of nectar long distance to bees in hive.
-            response = DISPLAY_NECTAR_LONG_DISTANCE;
-            return(true);
-         }
-      }
-      else
-      {
-         // Return to hive?
-         if (random.nextFloat() < returnToHiveProbability)
-         {
-            response = moveTo(width / 2, height / 2);
-            return(false);
-         }
-         else
-         {
-            // Increase tendency to return.
-            returnToHiveProbability += Parameters.BEE_RETURN_TO_HIVE_PROBABILITY_INCREMENT;
-            if (returnToHiveProbability > 1.0f)
-            {
-               returnToHiveProbability = 1.0f;
-            }
-         }
-      }
-
-      // Continue foraging.
-      if (goalSeeking)
-      {
-         // Fly directly to flower.
-         for (int x = 0; x < Parameters.WORLD_WIDTH; x++)
-         {
-            for (int y = 0; y < Parameters.WORLD_HEIGHT; y++)
-            {
-               if (world.cells[x][y].flower != null)
-               {
-                  if ((response = moveTo(x, y)) == -1)
-                  {
-                     response = WAIT;
-                  }
-                  return(false);
-               }
-            }
-         }
-         response = WAIT;
-         return(false);
-      }
-      else
-      {
-         // Semi-random foraging.
-         if (random.nextFloat() < Parameters.BEE_TURN_PROBABILITY)
-         {
-            response = random.nextInt(Orientation.NUM_ORIENTATIONS);
-         }
-         else
-         {
-            response = FORWARD;
-         }
-      }
-      return(false);
-   }
-
-
-   // Get response that moves to destination cell.
-   // Return -1 if at destination.
-   public int moveTo(int dX, int dY)
-   {
-      // At destination?
-      if ((dX == x) && (dY == y))
-      {
-         return(-1);
-      }
-
-      if (dX < x)
-      {
-         if (dY < y)
-         {
-            if (orientation == Orientation.SOUTHWEST)
-            {
-               return(FORWARD);
-            }
-            else
-            {
-               return(Orientation.SOUTHWEST);
-            }
-         }
-         else if (dY > y)
-         {
-            if (orientation == Orientation.NORTHWEST)
-            {
-               return(FORWARD);
-            }
-            else
-            {
-               return(Orientation.NORTHWEST);
-            }
-         }
-         else
-         {
-            if (orientation == Orientation.WEST)
-            {
-               return(FORWARD);
-            }
-            else
-            {
-               return(Orientation.WEST);
-            }
-         }
-      }
-      else if (dX > x)
-      {
-         if (dY < y)
-         {
-            if (orientation == Orientation.SOUTHEAST)
-            {
-               return(FORWARD);
-            }
-            else
-            {
-               return(Orientation.SOUTHEAST);
-            }
-         }
-         else if (dY > y)
-         {
-            if (orientation == Orientation.NORTHEAST)
-            {
-               return(FORWARD);
-            }
-            else
-            {
-               return(Orientation.NORTHEAST);
-            }
-         }
-         else
-         {
-            if (orientation == Orientation.EAST)
-            {
-               return(FORWARD);
-            }
-            else
-            {
-               return(Orientation.EAST);
-            }
-         }
-      }
-      else
-      {
-         if (dY < y)
-         {
-            if (orientation == Orientation.SOUTH)
-            {
-               return(FORWARD);
-            }
-            else
-            {
-               return(Orientation.SOUTH);
-            }
-         }
-         else if (dY > y)
-         {
-            if (orientation == Orientation.NORTH)
-            {
-               return(FORWARD);
-            }
-            else
-            {
-               return(Orientation.NORTH);
-            }
-         }
-         else
-         {
-            return(FORWARD);
-         }
-      }
-   }
-
-
-   // Get response that orients toward destination cell.
-   public int orientToward(int dX, int dY)
-   {
-      float mX = (float)Math.abs(dX - x);
-      float mY = (float)Math.abs(dY - y);
-      float r;
-
-      if (dX < x)
-      {
-         if (dY < y)
-         {
-            r = mY / mX;
-            if (r < 0.5f)
-            {
-               return(Orientation.WEST);
-            }
-            else if (r > 2.0f)
-            {
-               return(Orientation.SOUTH);
-            }
-            else
-            {
-               return(Orientation.SOUTHWEST);
-            }
-         }
-         else if (dY > y)
-         {
-            r = mY / mX;
-            if (r < 0.5f)
-            {
-               return(Orientation.WEST);
-            }
-            else if (r > 2.0f)
-            {
-               return(Orientation.NORTH);
-            }
-            else
-            {
-               return(Orientation.NORTHWEST);
-            }
-         }
-         else
-         {
-            return(Orientation.WEST);
-         }
-      }
-      else if (dX > x)
-      {
-         if (dY < y)
-         {
-            r = mY / mX;
-            if (r < 0.5f)
-            {
-               return(Orientation.EAST);
-            }
-            else if (r > 2.0f)
-            {
-               return(Orientation.SOUTH);
-            }
-            else
-            {
-               return(Orientation.SOUTHEAST);
-            }
-         }
-         else if (dY > y)
-         {
-            r = mY / mX;
-            if (r < 0.5f)
-            {
-               return(Orientation.EAST);
-            }
-            else if (r > 2.0f)
-            {
-               return(Orientation.NORTH);
-            }
-            else
-            {
-               return(Orientation.NORTHEAST);
-            }
-         }
-         else
-         {
-            return(Orientation.EAST);
-         }
-      }
-      else
-      {
-         if (dY < y)
-         {
-            return(Orientation.SOUTH);
-         }
-         else if (dY > y)
-         {
-            return(Orientation.NORTH);
-         }
-         else
-         {
-            // Co-located.
-            return(WAIT);
-         }
-      }
-   }
-
 
    // Get metamorph DB response.
    public void metamorphDBresponse()
    {
-      // Handling nectar?
-      if (handlingNectar = autopilotResponse(false))
-      {
          Metamorph metamorph = null;
          float     d         = 0.0f;
          float     d2;
-         for (Metamorph m : world.metamorphs)
+         for (Metamorph m : metamorphs)
          {
             d2 = morphognostic.compare(m.morphognostic);
             if ((metamorph == null) || (d2 < d))
@@ -937,76 +289,23 @@ public class Mouse
          }
          else
          {
-            response = WAIT;
+            response = -1;
          }
-         if (debugDB)
-         {
-            if (response == EXTRACT_NECTAR)
-            {
-               try
-               {
-                  Thread.sleep(3000);
-               }
-               catch (InterruptedException e) {}
-            }
-            int checkLongDist = morphognostic.locateEvent(2, NECTAR_LONG_DISTANCE_EVENT, false);
-            System.out.println("bee=" + id + ",response=" + response + ",checkLongDist=" + checkLongDist);
-         }
-      }
    }
 
 
    // Get metamorph neural network response.
    public void metamorphNNresponse()
    {
-      // Handling nectar?
-      if (handlingNectar = autopilotResponse(false))
-      {
-         if (world.metamorphNN != null)
+         if (metamorphNN != null)
          {
-            // Cannot locate hive?
-            if (!world.cells[x][y].hive &&
-                (morphognostic.locateEvent(3, HIVE_PRESENCE_EVENT, false) == -1))
-            {
-               // Drop nectar and force return to hive.
-               handlingNectar = false;
-               nectarCarry    = false;
-               morphognostic.clearEvent(SURPLUS_NECTAR_EVENT);
-               returnToHiveProbability = 1.0f;
-               response = moveTo(Parameters.WORLD_WIDTH / 2, Parameters.WORLD_HEIGHT / 2);
-               return;
-            }
-
-            // Get NN response.
-            response = world.metamorphNN.respond(morphognostic);
-            if (debugNN)
-            {
-               if (response == EXTRACT_NECTAR)
-               {
-                  try
-                  {
-                     Thread.sleep(3000);
-                  }
-                  catch (InterruptedException e) {}
-               }
-               int checkLongSurplus  = morphognostic.locateEvent(2, SURPLUS_NECTAR_EVENT, false);
-               int checkShortSurplus = morphognostic.locateEvent(1, SURPLUS_NECTAR_EVENT, false);
-               int checkLongDist     = morphognostic.locateEvent(2, NECTAR_LONG_DISTANCE_EVENT, false);
-               int checkShortDist    = morphognostic.locateEvent(1, NECTAR_SHORT_DISTANCE_EVENT, false);
-               int i = 3;
-               for ( ; i < 11; i++)
-               {
-                  if (morphognostic.locateEvent(0, i, false) != -1) { break; }
-               }
-               System.out.println("bee=" + id + ",response=" + response + ",checkLongSurplus=" + checkLongSurplus + ",checkLongDist=" + checkLongDist + ",checkShortSurplus=" + checkShortSurplus + ",checkShortDist=" + checkShortDist + ",checko=" + (i - 3) + ",distanceDisplay=" + nectarDistanceDisplay);
-            }
+            response = metamorphNN.respond(morphognostic);
          }
          else
          {
             System.err.println("Must train metamorph neural network");
-            response = WAIT;
+            response = -1;
          }
-      }
    }
 
 
@@ -1017,9 +316,9 @@ public class Mouse
       float     minCompare   = 0.0f;
       float     maxGoalValue = 0.0f;
 
-      for (int i = 0, j = world.metamorphs.size(); i < j; i++)
+      for (int i = 0, j = metamorphs.size(); i < j; i++)
       {
-         Metamorph m       = world.metamorphs.get(i);
+         Metamorph m       = metamorphs.get(i);
          float     compare = m.morphognostic.compare(morphognostic);
          if (metamorph == null)
          {
@@ -1048,135 +347,209 @@ public class Mouse
       }
       else
       {
-         response = WAIT;
-      }
-      if (debugDB)
-      {
-         if (response == EXTRACT_NECTAR)
-         {
-            try
-            {
-               Thread.sleep(3000);
-            }
-            catch (InterruptedException e) {}
-         }
-         int checkLongDist = morphognostic.locateEvent(2, NECTAR_LONG_DISTANCE_EVENT, false);
-         System.out.println("bee=" + id + ",response=" + response + ",checkLongDist=" + checkLongDist);
+         response = -1;
       }
    }
-
-
-   // Response value from name.
-   public static int getResponseValue(String name)
+   
+   // Update metamorphs.
+   public void updateMetamorphs(Morphognostic morphognostic, int response, float goalValue)
    {
-      if (name.equals("turn north"))
+      Metamorph metamorph = new Metamorph(morphognostic.clone(), response,
+                                          goalValue, getResponseName(response));
+
+      metamorph.morphognostic.orientation = Orientation.NORTH;
+      int foundIdx = -1;
+      for (int i = 0, j = metamorphs.size(); i < j; i++)
       {
-         return(Orientation.NORTH);
+         Metamorph m = metamorphs.get(i);
+         if (m.morphognostic.compare(metamorph.morphognostic) <= EQUIVALENT_MORPHOGNOSTIC_DISTANCE)
+         {
+            foundIdx = i;
+            break;
+         }
       }
-      if (name.equals("turn northeast"))
+      if (foundIdx == -1)
       {
-         return(Orientation.NORTHEAST);
+         metamorphs.add(metamorph);
+         foundIdx = metamorphs.size() - 1;
       }
-      if (name.equals("turn east"))
+      if (currentMetamorphIdx != -1)
       {
-         return(Orientation.EAST);
+         Metamorph currentMetamorph = metamorphs.get(currentMetamorphIdx);
+         for (int i = 0, j = currentMetamorph.effectIndexes.size(); i < j; i++)
+         {
+            if (currentMetamorph.effectIndexes.get(i) == foundIdx)
+            {
+               foundIdx = -1;
+               break;
+            }
+         }
+         if (foundIdx != -1)
+         {
+            currentMetamorph.effectIndexes.add(foundIdx);
+            metamorphs.get(foundIdx).causeIndexes.add(currentMetamorphIdx);
+
+            // Propagate goal value.
+            propagateGoalValue(currentMetamorph, metamorphs.get(foundIdx).goalValue);
+         }
       }
-      if (name.equals("turn southeast"))
-      {
-         return(Orientation.SOUTHEAST);
-      }
-      if (name.equals("turn south"))
-      {
-         return(Orientation.SOUTH);
-      }
-      if (name.equals("turn southwest"))
-      {
-         return(Orientation.SOUTHWEST);
-      }
-      if (name.equals("turn west"))
-      {
-         return(Orientation.WEST);
-      }
-      if (name.equals("turn northwest"))
-      {
-         return(Orientation.NORTHWEST);
-      }
-      if (name.equals("move forward"))
-      {
-         return(FORWARD);
-      }
-      if (name.equals("extract nectar"))
-      {
-         return(EXTRACT_NECTAR);
-      }
-      if (name.equals("deposit nectar"))
-      {
-         return(DEPOSIT_NECTAR);
-      }
-      if (name.equals("display nectar long distance"))
-      {
-         return(DISPLAY_NECTAR_LONG_DISTANCE);
-      }
-      if (name.equals("display nectar short distance"))
-      {
-         return(DISPLAY_NECTAR_SHORT_DISTANCE);
-      }
-      if (name.equals("wait"))
-      {
-         return(WAIT);
-      }
-      return(-1);
+      currentMetamorphIdx = foundIdx;
    }
 
 
+   // Propagate goal value.
+   public void propagateGoalValue(Metamorph metamorph, float effectGoalValue)
+   {
+      float v = effectGoalValue * Mouse.GOAL_VALUE_DISCOUNT_FACTOR;
+
+      if (v > metamorph.goalValue)
+      {
+         metamorph.goalValue = v;
+         for (int i = 0, j = metamorph.causeIndexes.size(); i < j; i++)
+         {
+            propagateGoalValue(metamorphs.get(metamorph.causeIndexes.get(i)), v);
+         }
+      }
+   }
+
+
+   // Train metamorph neural network.
+   public void trainMetamorphNN()
+   {
+      metamorphNN = new MetamorphNN(random);
+      metamorphNN.train(metamorphs);
+   }
+
+
+   // Save metamorph neural network.
+   public void saveMetamorphNN(String filename)
+   {
+      if (metamorphNN != null)
+      {
+         metamorphNN.saveModel(filename);
+      }
+      else
+      {
+         System.err.println("Cannot save null metamorph neural network to file " + filename);
+      }
+   }
+
+
+   // Load metamorph neural network.
+   public void loadMetamorphNN(String filename)
+   {
+      if (metamorphNN == null)
+      {
+         metamorphNN = new MetamorphNN(random);
+      }
+      metamorphNN.loadModel(filename);
+   }
+
+
+   // Clear metamorphs.
+   public void clearMetamorphs()
+   {
+      metamorphs.clear();
+      currentMetamorphIdx = -1;
+   }
+
+
+   // Write metamporph dataset.
+   public void writeMetamorphDataset(String filename) throws Exception
+   {
+      FileOutputStream output;
+
+      try
+      {
+         output = new FileOutputStream(new File(filename));
+      }
+      catch (Exception e)
+      {
+         throw new IOException("Cannot open output file " + filename + ":" + e.getMessage());
+      }
+      if (metamorphs.size() > 0)
+      {
+         Morphognostic morphognostic = metamorphs.get(0).morphognostic;
+         String        oldlinesep    = System.getProperty("line.separator");
+         System.setProperty("line.separator", "\n");
+         PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output)));
+         for (int i = 0; i < morphognostic.NUM_NEIGHBORHOODS; i++)
+         {
+            int n = morphognostic.neighborhoods.get(i).sectors.length;
+            for (int x = 0; x < n; x++)
+            {
+               for (int y = 0; y < n; y++)
+               {
+                  for (int d = 0; d < morphognostic.eventDimensions; d++)
+                  {
+                     for (int j = 0; j < morphognostic.eventValueDimensions[d]; j++)
+                     {
+                        writer.print(i + "-" + x + "-" + y + "-" + d + "-" + j + ",");
+                     }
+                  }
+               }
+            }
+         }
+         writer.println("response");
+         for (Metamorph m : metamorphs)
+         {
+            writer.println(morphognostic2csv(m.morphognostic) + "," + m.response);
+         }
+         writer.flush();
+         writer.close();
+         System.setProperty("line.separator", oldlinesep);
+      }
+      output.close();
+   }
+
+
+   // Flatten morphognostic to csv string.
+   public String morphognostic2csv(Morphognostic morphognostic)
+   {
+      String  output    = "";
+      boolean skipComma = true;
+      int     dx        = 0;
+
+      for (int i = 0; i < morphognostic.NUM_NEIGHBORHOODS; i++)
+      {
+         Neighborhood neighborhood = morphognostic.neighborhoods.get(i);
+         float[][][] densities = neighborhood.rectifySectorValueDensities();
+         int n = neighborhood.sectors.length;
+         for (int j = 0, j2 = n * n; j < j2; j++)
+         {
+            for (int d = dx, d2 = morphognostic.eventDimensions; d < d2; d++)
+            {
+               for (int k = 0, k2 = morphognostic.eventValueDimensions[d]; k < k2; k++)
+               {
+                  if (skipComma)
+                  {
+                     skipComma = false;
+                  }
+                  else
+                  {
+                     output += ",";
+                  }
+                  output += (densities[j][d][k] + "");
+               }
+            }
+         }
+      }
+      return(output);
+   } 
+   
    // Get response name.
    public static String getResponseName(int response)
    {
-      switch (response)
-      {
-      case Orientation.NORTH:
-         return("turn north");
-
-      case Orientation.NORTHEAST:
-         return("turn northeast");
-
-      case Orientation.EAST:
-         return("turn east");
-
-      case Orientation.SOUTHEAST:
-         return("turn southeast");
-
-      case Orientation.SOUTH:
-         return("turn south");
-
-      case Orientation.SOUTHWEST:
-         return("turn southwest");
-
-      case Orientation.WEST:
-         return("turn west");
-
-      case Orientation.NORTHWEST:
-         return("turn northwest");
-
-      case FORWARD:
-         return("move forward");
-
-      case EXTRACT_NECTAR:
-         return("extract nectar");
-
-      case DEPOSIT_NECTAR:
-         return("deposit nectar");
-
-      case DISPLAY_NECTAR_LONG_DISTANCE:
-         return("display nectar long distance");
-
-      case DISPLAY_NECTAR_SHORT_DISTANCE:
-         return("display nectar short distance");
-
-      case WAIT:
-         return("wait");
-      }
-
-      return("unknown");
-   }
+	  if (response >= 0)
+	  {
+		  if (response < WAIT_RESPONSE)
+		  {
+			  return "door " + response;
+		  } else {
+			  return "wait";
+		  }
+	  } else {
+		  return "invalid";
+	  }
+   }   
 }
