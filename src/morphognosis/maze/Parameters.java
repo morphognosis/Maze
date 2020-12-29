@@ -12,10 +12,9 @@ import morphognosis.Utility;
 public class Parameters
 {
    // Morphognosis parameters.
-   public static int     NUM_NEIGHBORHOODS        = 4;
-   public static int[][] NEIGHBORHOOD_DIMENSIONS  = { { 3, 1 }, { 3, 1 }, { 3, 1 }, { 3, 1 } };
-   public static int[]   NEIGHBORHOOD_DURATIONS   = { 1, 1, 1, 75 };
-   public static boolean BINARY_VALUE_AGGREGATION = true;
+   public static int     NUM_NEIGHBORHOODS        = 6;
+   public static int[][] NEIGHBORHOOD_DIMENSIONS  = { { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 } };
+   public static int[]   NEIGHBORHOOD_DURATIONS   = { 1, 1, 1, 1, 1, 10 };
 
    // Metamorph neural network parameters.
    public static double NN_LEARNING_RATE = 0.1;
@@ -36,12 +35,6 @@ public class Parameters
       {
          Utility.saveInt(writer, NEIGHBORHOOD_DURATIONS[i]);
       }
-      int v = 0;
-      if (BINARY_VALUE_AGGREGATION)
-      {
-         v = 1;
-      }
-      Utility.saveInt(writer, v);
       Utility.saveDouble(writer, NN_LEARNING_RATE);
       Utility.saveDouble(writer, NN_MOMENTUM);
       Utility.saveString(writer, NN_HIDDEN_LAYERS);
@@ -64,15 +57,6 @@ public class Parameters
       for (int i = 0; i < NUM_NEIGHBORHOODS; i++)
       {
          NEIGHBORHOOD_DURATIONS[i] = Utility.loadInt(reader);
-      }
-      int v = Utility.loadInt(reader);
-      if (v == 1)
-      {
-         BINARY_VALUE_AGGREGATION = true;
-      }
-      else
-      {
-         BINARY_VALUE_AGGREGATION = false;
       }
       NN_LEARNING_RATE = Utility.loadDouble(reader);
       NN_MOMENTUM      = Utility.loadDouble(reader);
@@ -105,7 +89,6 @@ public class Parameters
          }
       }
       System.out.println("}");
-      System.out.println("BINARY_VALUE_AGGREGATION = " + BINARY_VALUE_AGGREGATION);
       System.out.println("NN_LEARNING_RATE = " + NN_LEARNING_RATE);
       System.out.println("NN_MOMENTUM = " + NN_MOMENTUM);
       System.out.println("NN_HIDDEN_LAYERS = " + NN_HIDDEN_LAYERS);

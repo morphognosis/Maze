@@ -76,14 +76,11 @@ public class Mouse
     */
 
    // Constructor.
-   public Mouse(Random random)
+   public Mouse(int numSensors, int numResponses, Random random)
    {
-	   if (NUM_SENSORS == -1 || NUM_RESPONSES == -1 || WAIT_RESPONSE == -1)
-	   {
-		   System.err.println("Cannot construct mouse: invalid parameters");
-		   System.exit(1);
-	   }
-	   
+	   NUM_SENSORS = numSensors;
+	   NUM_RESPONSES = numResponses;
+	   WAIT_RESPONSE = NUM_RESPONSES - 1;
       this.random = random;
 
       sensors = new float[NUM_SENSORS];
@@ -97,26 +94,20 @@ public class Mouse
 
       // Initialize Morphognostic.
       int eventDimensions = NUM_SENSORS;
-      int[] eventValueDimensions = new int[eventDimensions];
-      for (int i = 0; i < eventDimensions; i++)
-      {
-         eventValueDimensions[i] = 1;
-      }
-      boolean[][] neighborhoodEventMap = new boolean[Parameters.NUM_NEIGHBORHOODS][eventDimensions];
+      boolean[][] neighborhoodEventDimensionMap = new boolean[Parameters.NUM_NEIGHBORHOODS][eventDimensions];
       for (int i = 0; i < Parameters.NUM_NEIGHBORHOODS; i++)
       {
             for (int j = 0; j < eventDimensions; j++)
             {
-                  neighborhoodEventMap[i][j] = true;
+                  neighborhoodEventDimensionMap[i][j] = true;
             }
       }
       morphognostic = new Morphognostic(Orientation.NORTH,
-                                        eventValueDimensions,
-                                        neighborhoodEventMap,
+                                        eventDimensions,
+                                        neighborhoodEventDimensionMap,
                                         Parameters.NUM_NEIGHBORHOODS,
                                         Parameters.NEIGHBORHOOD_DIMENSIONS,
-                                        Parameters.NEIGHBORHOOD_DURATIONS,
-                                        Parameters.BINARY_VALUE_AGGREGATION);
+                                        Parameters.NEIGHBORHOOD_DURATIONS);
       
       // Create metamorphs.
       currentMetamorphIdx = -1;
@@ -249,12 +240,7 @@ public class Mouse
    // Update morphognostic.
    public void updateMorphognostic()
    {
-      int[] eventValues = new int[morphognostic.eventDimensions];
-      for (int i = 0; i < NUM_SENSORS; i++)
-      {
-    	  eventValues[i] = (int)sensors[i];
-      }
-      morphognostic.update(eventValues, 0, 0);
+      morphognostic.update(sensors, 0, 0);
    }
 
    // Get metamorph DB response.
@@ -482,10 +468,7 @@ public class Mouse
                {
                   for (int d = 0; d < morphognostic.eventDimensions; d++)
                   {
-                     for (int j = 0; j < morphognostic.eventValueDimensions[d]; j++)
-                     {
-                        writer.print(i + "-" + x + "-" + y + "-" + d + "-" + j + ",");
-                     }
+                        writer.print(i + "-" + x + "-" + y + "-" + d + ",");
                   }
                }
             }
@@ -513,14 +496,12 @@ public class Mouse
       for (int i = 0; i < morphognostic.NUM_NEIGHBORHOODS; i++)
       {
          Neighborhood neighborhood = morphognostic.neighborhoods.get(i);
-         float[][][] densities = neighborhood.rectifySectorValueDensities();
+         float[][] values = neighborhood.rectifySectorValues();
          int n = neighborhood.sectors.length;
          for (int j = 0, j2 = n * n; j < j2; j++)
          {
             for (int d = dx, d2 = morphognostic.eventDimensions; d < d2; d++)
             {
-               for (int k = 0, k2 = morphognostic.eventValueDimensions[d]; k < k2; k++)
-               {
                   if (skipComma)
                   {
                      skipComma = false;
@@ -529,8 +510,7 @@ public class Mouse
                   {
                      output += ",";
                   }
-                  output += (densities[j][d][k] + "");
-               }
+                  output += (values[j][d] + "");
             }
          }
       }

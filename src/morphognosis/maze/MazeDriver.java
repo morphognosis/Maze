@@ -23,6 +23,8 @@ public class MazeDriver
    public int numOutputs;
   
    // Mouse.
+   public int numSensors;
+   public int numResponses;
    public Mouse mouse;
 
    // Random numbers.
@@ -41,10 +43,11 @@ public class MazeDriver
       loadMazes();
 
       // Create mouse.
-      mouse = new Mouse(random);
+      mouse = new Mouse(numSensors, numResponses, random);
    }
    
    // Load mazes.
+   @SuppressWarnings("unused")
    public void loadMazes()
    {
 	   trainingMazes = new ArrayList<Maze>();
@@ -55,7 +58,6 @@ public class MazeDriver
 	   List<Boolean> y_train_seq = null;
 	   List<Integer> X_test_shape = null;
 	   List<Boolean> X_test_seq = null;
-	   @SuppressWarnings("unused")
 	   List<Integer> y_test_shape = null;
 	   List<Boolean> y_test_seq = null;		   
 	   try (BufferedReader br = new BufferedReader(new FileReader(MAZE_DATASET_FILE_NAME))) 
@@ -136,9 +138,8 @@ public class MazeDriver
 	       }
 	       
 	       // Set mouse sensor and response parameters.
-	       Mouse.NUM_SENSORS = X_train_shape.get(2);
-	       Mouse.NUM_RESPONSES = y_train_shape.get(2);
-	       Mouse.WAIT_RESPONSE = Mouse.NUM_RESPONSES - 1;
+	       numSensors = X_train_shape.get(2);
+	       numResponses = y_train_shape.get(2);
 	       
 	       // Initialize training mazes.
 	       int X_idx = 0;
@@ -152,18 +153,24 @@ public class MazeDriver
 	    	   Maze maze = new Maze();
 	    	   for (int step = 0; step < num_steps; step++)
 	    	   {
-	    		   boolean[] sensors = new boolean[num_sensors];
+	    		   float[] sensors = new float[num_sensors];
 	    		   for (int i = 0; i < num_sensors; i++)
 	    		   {
-	    			   sensors[i] = X_train_seq.get(X_idx++);
+	    			   if (X_train_seq.get(X_idx++))
+	    			   {
+	    				   sensors[i] = 1.0f;
+	    			   } else {
+	    				   sensors[i] = 0.0f;
+	    			   }
 	    		   }
 	    		   maze.addSensors(sensors);
-	    		   boolean[] responses = new boolean[num_responses];
 	    		   for (int i = 0; i < num_responses; i++)
 	    		   {
-	    			   responses[i] = y_train_seq.get(y_idx++);
-	    		   }
-	    		   maze.addResponses(responses);	    		   
+	    			   if (y_train_seq.get(y_idx++))
+	    			   {
+	    				   maze.addResponse(i);
+	    			   }
+	    		   }    		   
 	    	   }
 	    	   trainingMazes.add(maze);
 	       }
@@ -177,18 +184,23 @@ public class MazeDriver
 	    	   Maze maze = new Maze();
 	    	   for (int step = 0; step < num_steps; step++)
 	    	   {
-	    		   boolean[] sensors = new boolean[num_sensors];
+	    		   float[] sensors = new float[num_sensors];
 	    		   for (int i = 0; i < num_sensors; i++)
 	    		   {
-	    			   sensors[i] = X_test_seq.get(X_idx++);
+	    			   if (X_test_seq.get(X_idx++))
+	    			   {
+	    				   sensors[i] = 1.0f;
+	    			   } else {
+	    				   sensors[i] = 0.0f;
+	    			   }
 	    		   }
-	    		   maze.addSensors(sensors);
-	    		   boolean[] responses = new boolean[num_responses];
 	    		   for (int i = 0; i < num_responses; i++)
 	    		   {
-	    			   responses[i] = y_test_seq.get(y_idx++);
-	    		   }
-	    		   maze.addResponses(responses);	    		   
+	    			   if (y_test_seq.get(y_idx++))
+	    			   {
+	    				   maze.addResponse(i);
+	    			   }
+	    		   }    		       		   
 	    	   }
 	    	   testingMazes.add(maze);
 	       }	       
@@ -211,27 +223,72 @@ public class MazeDriver
       random.setSeed(randomSeed);
       for (Maze maze : trainingMazes)
       {
-    	  maze.resetCursors();
+    	  maze.reset();
       }
       for (Maze maze : testingMazes)
       {
-    	  maze.resetCursors();
+    	  maze.reset();
       }
       mouse.reset();
    }
 
-   // Step mouse.
-   public void stepMouse()
+   // Train mouse on mazes.
+   public void train()
    {
-
+	   System.out.println("Train");
+	   mouse.driver = Driver.TRAINING_OVERRIDE;
+	   for (Maze maze : trainingMazes)
+	   {
+		   maze.reset();
+		   mouse.reset();
+		   float[] sensors = null;
+		   while ((sensors = maze.nextSensors()) != null)
+		   {
+			   mouse.overrideResponse = maze.nextResponse();
+			   mouse.cycle(sensors);
+		   }
+	   }
    }
-
-
-   // Get mouse sensors.
-   public float[] getSensors(Mouse mouse)
+   
+   // Validate training.
+   public void validate()
    {
-      float[] sensors = new float[numInputs];
-
-      return(sensors);
+	   System.out.println("Validate training");
+	   mouse.driver = Driver.METAMORPH_DB;
+	   int n = 0;
+	   for (Maze maze : trainingMazes)
+	   {
+		   System.out.println("Maze " + n++);
+		   maze.reset();
+		   mouse.reset();
+		   float[] sensors = null;
+		   while ((sensors = maze.nextSensors()) != null)
+		   {
+			   int response = mouse.cycle(sensors);
+			   int correctResponse = maze.nextResponse();
+			   System.out.println("response=" + response + ", correct response=" + correctResponse);
+		   }
+	   }
+   }
+   
+   // Test mouse on mazes.
+   public void test()
+   {
+	   System.out.println("Test");
+	   mouse.driver = Driver.METAMORPH_DB;
+	   int n = 0;
+	   for (Maze maze : testingMazes)
+	   {
+		   System.out.println("Maze " + n++);
+		   maze.reset();
+		   mouse.reset();
+		   float[] sensors = null;
+		   while ((sensors = maze.nextSensors()) != null)
+		   {
+			   int response = mouse.cycle(sensors);
+			   int correctResponse = maze.nextResponse();
+			   System.out.println("response=" + response + ", correct response=" + correctResponse);
+		   }
+	   }
    }
 }

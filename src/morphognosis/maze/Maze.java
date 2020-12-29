@@ -9,10 +9,10 @@ import java.util.ArrayList;
 public class Maze
 {
 	// Sensor sequence.
-   public ArrayList<boolean[]>        sensorSequence;
+   public ArrayList<float[]>        sensorSequence;
    
    // Response sequence.
-   public ArrayList<boolean[]> responseSequence;
+   public ArrayList<Integer> responseSequence;
    
    // Sequence cursors.
    public int sensorsCursor;
@@ -21,31 +21,31 @@ public class Maze
    // Constructor.
    public Maze()
    {
-	   sensorSequence = new ArrayList<boolean[]>();
-	   responseSequence = new ArrayList<boolean[]>();
+	   sensorSequence = new ArrayList<float[]>();
+	   responseSequence = new ArrayList<Integer>();
 	   sensorsCursor = responseCursor = 0;
    }
    
    // Add sensors to sequence.
-   public void addSensors(boolean[] sensors)
+   public void addSensors(float[] sensors)
    {
 	   sensorSequence.add(sensors);
    }
    
    // Add response to sequence.
-   public void addResponses(boolean[] responses)
+   public void addResponse(int response)
    {
-	   responseSequence.add(responses);
+	   responseSequence.add(response);
    }
    
    // Reset cursors.
-   public void resetCursors()
+   public void reset()
    {
 	   sensorsCursor = responseCursor = 0;
    }
    
    // Next sensors.
-   public boolean[] nextSensors()
+   public float[] nextSensors()
    {
 	   if (sensorsCursor < sensorSequence.size()) 
 	   {
@@ -56,13 +56,13 @@ public class Maze
    }
    
    // Next response.
-   public boolean[] nextResponse()
+   public int nextResponse()
    {
 	   if (responseCursor < responseSequence.size()) 
 	   {
 		   return responseSequence.get(responseCursor++);
 	   } else {
-		   return null;
+		   return -1;
 	   }
    }
 }

@@ -61,10 +61,7 @@ public class MetamorphNN
                {
                   if (neighborhood.eventDimensionMap[d])
                   {
-                     for (int j = 0; j < morphognostic.eventValueDimensions[d]; j++)
-                     {
-                        attributeNames.add(new Attribute(i + "-" + x + "-" + y + "-" + d + "-" + j));
-                     }
+                        attributeNames.add(new Attribute(i + "-" + x + "-" + y + "-" + d));
                   }
                }
             }
@@ -139,11 +136,8 @@ public class MetamorphNN
                {
                   if (neighborhood.eventDimensionMap[d])
                   {
-                     for (int j = 0; j < s.valueDensities[d].length; j++)
-                     {
-                        attrValues[a] = s.valueDensities[d][j];
+                        attrValues[a] = s.eventDimensionValues[d];
                         a++;
-                     }
                   }
                }
             }
@@ -172,10 +166,7 @@ public class MetamorphNN
                {
                   if (neighborhood.eventDimensionMap[d])
                   {
-                     for (int j = 0; j < s.valueDensities[d].length; j++)
-                     {
                         numAttributes++;
-                     }
                   }
                }
             }

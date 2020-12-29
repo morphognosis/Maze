@@ -45,7 +45,7 @@ public class SectorDisplay extends JFrame implements Runnable
    Dimension imageSize;
    Font      imageFont;
    Thread    displayThread;
-   enum DISPLAY_MODE { DENSITIES, NAMES };
+   enum DISPLAY_MODE { VALUES, NAMES };
    DISPLAY_MODE displayMode;
 
    // Constructor.
@@ -75,14 +75,14 @@ public class SectorDisplay extends JFrame implements Runnable
       JPanel modePanel = new JPanel();
       modePanel.setLayout(new FlowLayout());
       basePanel.add(modePanel, BorderLayout.SOUTH);
-      JRadioButton densities = new JRadioButton("Densities", true);
-      displayMode = DISPLAY_MODE.DENSITIES;
-      densities.addActionListener(new ActionListener()
+      JRadioButton values = new JRadioButton("Values", true);
+      displayMode = DISPLAY_MODE.VALUES;
+      values.addActionListener(new ActionListener()
                                   {
                                      @Override
                                      public void actionPerformed(ActionEvent e)
                                      {
-                                        displayMode = DISPLAY_MODE.DENSITIES;
+                                        displayMode = DISPLAY_MODE.VALUES;
                                      }
                                   }
                                   );
@@ -97,9 +97,9 @@ public class SectorDisplay extends JFrame implements Runnable
                               }
                               );
       ButtonGroup modeGroup = new ButtonGroup();
-      modeGroup.add(densities);
+      modeGroup.add(values);
       modeGroup.add(names);
-      modePanel.add(densities);
+      modePanel.add(values);
       modePanel.add(names);
       pack();
       setVisible(false);
@@ -161,49 +161,34 @@ public class SectorDisplay extends JFrame implements Runnable
       float fx, fw;
 
       // Get colors
-      Color[][] colors = new Color[morphognostic.eventDimensions][];
+      Color[] colors = new Color[morphognostic.eventDimensions];
       for (d = 0; d < morphognostic.eventDimensions; d++)
       {
-         colors[d] = new Color[morphognostic.eventValueDimensions[d]];
-         for (i = 0; i < morphognostic.eventValueDimensions[d]; i++)
-         {
-            colors[d][i] = getEventColor(d, i);
-         }
+            colors[d] = getEventDimensionColor(d);
       }
 
-      if (displayMode == DISPLAY_MODE.DENSITIES)
+      if (displayMode == DISPLAY_MODE.VALUES)
       {
-         // Draw dimension value densities.
+         // Draw dimension values.
          imageGraphics.setColor(Color.gray);
          imageGraphics.fillRect(0, 0, imageSize.width, imageSize.height);
 
-         // Draw value density histogram.
-         n = 0;
-         for (d = 0; d < morphognostic.eventDimensions; d++)
-         {
-            if (neighborhood.eventDimensionMap[d])
-            {
-               n += morphognostic.eventValueDimensions[d];
-            }
-         }
-         fw = (float)imageSize.width / (float)n;
+         // Draw values.
+         fw = (float)imageSize.width / (float)morphognostic.eventDimensions;
          fx = 0.0f;
          for (i = d = 0; d < morphognostic.eventDimensions; d++)
          {
             if (neighborhood.eventDimensionMap[d])
             {
-               for (j = 0; j < morphognostic.eventValueDimensions[d]; j++, i++, fx += fw)
-               {
-                  imageGraphics.setColor(colors[d][j]);
-                  h = (int)((float)imageSize.height * sector.getValueDensity(d, j));
+                  imageGraphics.setColor(colors[d]);
+                  h = (int)((float)imageSize.height * sector.getEventDimensionValue(d));
                   imageGraphics.fillRect((int)fx, imageSize.height - h, (int)(fw + 1.0), h);
-               }
             }
          }
          imageGraphics.setColor(Color.black);
          imageGraphics.drawLine(0, 0, imageSize.width, 0);
          imageGraphics.drawLine(0, imageSize.height - 1, imageSize.width, imageSize.height - 1);
-         for (i = 0, j = n - 1, fx = fw; i < j; i++, fx += fw)
+         for (i = 0, j = morphognostic.eventDimensions - 1, fx = fw; i < j; i++, fx += fw)
          {
             imageGraphics.drawLine((int)fx, 0, (int)fx, imageSize.height);
          }
@@ -215,18 +200,18 @@ public class SectorDisplay extends JFrame implements Runnable
          imageGraphics.fillRect(0, 0, imageSize.width, imageSize.height);
 
          imageGraphics.setColor(Color.white);
-         if (morphognostic.eventNames == null)
+         if (morphognostic.eventDimensionNames == null)
          {
             imageGraphics.drawString("event names unavailable", 0, 5);
          }
          else
          {
             int y = 9;
-            for (i = 0; i < morphognostic.eventNames.length; i++)
+            for (i = 0; i < morphognostic.eventDimensionNames.length; i++)
             {
                if (neighborhood.eventDimensionMap[i])
                {
-                  String name = morphognostic.eventNames[i];
+                  String name = morphognostic.eventDimensionNames[i];
                   if (name != null)
                   {
                      imageGraphics.drawString(name, 0, y);
@@ -236,12 +221,8 @@ public class SectorDisplay extends JFrame implements Runnable
                      imageGraphics.drawString("unnamed", 0, y);
                   }
                   int x = canvasGraphics.getFontMetrics().stringWidth(name);
-                  for (j = 0; j < morphognostic.eventValueDimensions[i]; j++)
-                  {
-                     imageGraphics.setColor(colors[i][j]);
-                     imageGraphics.fillRect(x, y - 5, 5, 5);
-                     x += 8;
-                  }
+                  imageGraphics.setColor(colors[i]);
+                  imageGraphics.fillRect(x, y - 5, 5, 5);
                   imageGraphics.setColor(Color.white);
                   y += 9;
                }
@@ -251,38 +232,14 @@ public class SectorDisplay extends JFrame implements Runnable
       canvasGraphics.drawImage(image, 0, 0, this);
    }
 
-
-   // Graduated colors.
-   public static boolean[] graduatedColors        = null;
-   public static int[]     graduatedColorMaximums = null;
-
-   // Get event color.
-   public static Color getEventColor(int dimension, int eventValue)
+   // Get event dimension color.
+   public static Color getEventDimensionColor(int dimension)
    {
-      switch (eventValue)
-      {
-      case -1:
-         return(Color.GRAY);
-
-      default:
          Random random = new Random();
-         if ((graduatedColors == null) || !graduatedColors[dimension])
-         {
-            random.setSeed(((dimension + 3) * 1000) + eventValue);
+            random.setSeed(((dimension + 3) * 1000));
             float r = random.nextFloat();
             float g = random.nextFloat();
             float b = random.nextFloat();
             return(new Color(r, g, b));
-         }
-         else
-         {
-            random.setSeed(dimension + 3);
-            float s = (float)eventValue / (float)graduatedColorMaximums[dimension];
-            int   r = 255 - (int)(255.0f * random.nextFloat() * s);
-            int   g = 255 - (int)(255.0f * random.nextFloat() * s);
-            int   b = 255 - (int)(255.0f * random.nextFloat() * s);
-            return(new Color(r, g, b));
-         }
-      }
    }
 }
