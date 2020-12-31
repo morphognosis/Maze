@@ -61,7 +61,7 @@ public class MetamorphNN
                {
                   if (neighborhood.eventDimensionMap[d])
                   {
-                        attributeNames.add(new Attribute(i + "-" + x + "-" + y + "-" + d));
+                     attributeNames.add(new Attribute(i + "-" + x + "-" + y + "-" + d));
                   }
                }
             }
@@ -136,8 +136,8 @@ public class MetamorphNN
                {
                   if (neighborhood.eventDimensionMap[d])
                   {
-                        attrValues[a] = s.eventDimensionValues[d];
-                        a++;
+                     attrValues[a] = s.eventDimensionValues[d];
+                     a++;
                   }
                }
             }
@@ -166,7 +166,7 @@ public class MetamorphNN
                {
                   if (neighborhood.eventDimensionMap[d])
                   {
-                        numAttributes++;
+                     numAttributes++;
                   }
                }
             }

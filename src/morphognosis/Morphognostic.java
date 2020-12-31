@@ -18,21 +18,21 @@ import java.util.Vector;
 public class Morphognostic
 {
    // Parameters.
-   public static final int     DEFAULT_NUM_NEIGHBORHOODS        = 1;
-   public static final int[][] DEFAULT_NEIGHBORHOOD_DIMENSIONS  = { { 3, 1 } };
-   public static final int[]   DEFAULT_NEIGHBORHOOD_DURATIONS   = { 1 };
+   public static final int     DEFAULT_NUM_NEIGHBORHOODS       = 1;
+   public static final int[][] DEFAULT_NEIGHBORHOOD_DIMENSIONS = { { 3, 1 } };
+   public static final int[]   DEFAULT_NEIGHBORHOOD_DURATIONS  = { 1 };
    public int NUM_NEIGHBORHOODS = DEFAULT_NUM_NEIGHBORHOODS;
    // NEIGHBORHOOD_DIMENSIONS element: { <neighborhood dimension>, <sector dimension> }
-   public int[][] NEIGHBORHOOD_DIMENSIONS  = DEFAULT_NEIGHBORHOOD_DIMENSIONS;
-   public int[]   NEIGHBORHOOD_DURATIONS   = DEFAULT_NEIGHBORHOOD_DURATIONS;
+   public int[][] NEIGHBORHOOD_DIMENSIONS = DEFAULT_NEIGHBORHOOD_DIMENSIONS;
+   public int[]   NEIGHBORHOOD_DURATIONS  = DEFAULT_NEIGHBORHOOD_DURATIONS;
 
    // Events.
    public class Event
    {
       public float[] values;
-      public int   x;
-      public int   y;
-      public int   time;
+      public int     x;
+      public int     y;
+      public int     time;
       public Event(float[] values, int x, int y, int time)
       {
          int n = values.length;
@@ -53,11 +53,12 @@ public class Morphognostic
       return(new Event(values, x, y, time));
    }
 
+
    // Event quantities.
-   public int   eventDimensions;
-   public int   maxEventAge;
-   public int   eventTime;
-   public       String[] eventDimensionNames;
+   public int eventDimensions;
+   public int maxEventAge;
+   public int eventTime;
+   public     String[] eventDimensionNames;
 
    // Neighborhood.
    public class Neighborhood
@@ -65,26 +66,26 @@ public class Morphognostic
       public int       dx, dy, dimension;
       public int       duration;
       public boolean[] eventDimensionMap;
-      public float[] eventDimensionMaxValues;
+      public float[]   eventDimensionMaxValues;
 
       // Sector.
       public class Sector
       {
-         public int       dx, dy, dimension;
+         public int     dx, dy, dimension;
          public float[] eventDimensionValues;
 
          public Sector(int dx, int dy, int dimension)
          {
-            this.dx        = dx;
-            this.dy        = dy;
-            this.dimension = dimension;
+            this.dx              = dx;
+            this.dy              = dy;
+            this.dimension       = dimension;
             eventDimensionValues = new float[eventDimensions];
          }
 
 
          public void setEventDimensionValue(int dimension, float value)
          {
-        	 eventDimensionValues[dimension] = value;
+            eventDimensionValues[dimension] = value;
          }
 
 
@@ -143,7 +144,8 @@ public class Morphognostic
                sectors[x][y] = new Sector(sdx, sdy, sectorDimension);
             }
          }
-         eventDimensionMap = null;
+         eventDimensionMap       = null;
+         eventDimensionMaxValues = new float[eventDimensions];
       }
 
 
@@ -151,10 +153,10 @@ public class Morphognostic
       public void update(int cx, int cy, boolean wrapWorld)
       {
          // Clear.
-          for (int i = 0; i < eventDimensions; i++)
-          {
-        	  eventDimensionMaxValues[i] = 0.0f;
-          }    	  	 
+         for (int i = 0; i < eventDimensions; i++)
+         {
+            eventDimensionMaxValues[i] = 0.0f;
+         }
          for (int sx1 = 0, sx2 = sectors.length; sx1 < sx2; sx1++)
          {
             for (int sy1 = 0, sy2 = sectors.length; sy1 < sy2; sy1++)
@@ -162,7 +164,7 @@ public class Morphognostic
                Sector s = sectors[sx1][sy1];
                for (int i = 0; i < eventDimensions; i++)
                {
-                     s.eventDimensionValues[i] = 0.0f;
+                  s.eventDimensionValues[i] = 0.0f;
                }
             }
          }
@@ -207,11 +209,11 @@ public class Morphognostic
                   {
                      if (event.values[d] != -1.0f)
                      {
-                           s.eventDimensionValues[d] += event.values[d];
-                           if (eventDimensionMaxValues[d] < s.eventDimensionValues[d])
-                           {
-                        	   eventDimensionMaxValues[d] = s.eventDimensionValues[d];
-                           }
+                        s.eventDimensionValues[d] += event.values[d];
+                        if (eventDimensionMaxValues[d] < s.eventDimensionValues[d])
+                        {
+                           eventDimensionMaxValues[d] = s.eventDimensionValues[d];
+                        }
                      }
                   }
                }
@@ -231,7 +233,7 @@ public class Morphognostic
          {
             for (int d = 0; d < eventDimensions; d++)
             {
-                  c += Math.abs(values1[i][d] - values2[i][d]);
+               c += Math.abs(values1[i][d] - values2[i][d]);
             }
          }
          return(c);
@@ -251,7 +253,7 @@ public class Morphognostic
                {
                   for (int d = 0; d < eventDimensions; d++)
                   {
-                        values[i][d] = sectors[sx1][sy1].eventDimensionValues[d];
+                     values[i][d] = sectors[sx1][sy1].eventDimensionValues[d];
                   }
                   i++;
                }
@@ -265,7 +267,7 @@ public class Morphognostic
                {
                   for (int d = 0; d < eventDimensions; d++)
                   {
-                        values[i][d] = sectors[sx1][sy1].eventDimensionValues[d];
+                     values[i][d] = sectors[sx1][sy1].eventDimensionValues[d];
                   }
                   i++;
                }
@@ -279,7 +281,7 @@ public class Morphognostic
                {
                   for (int d = 0; d < eventDimensions; d++)
                   {
-                	  values[i][d] = sectors[sx1][sy1].eventDimensionValues[d];
+                     values[i][d] = sectors[sx1][sy1].eventDimensionValues[d];
                   }
                   i++;
                }
@@ -293,7 +295,7 @@ public class Morphognostic
                {
                   for (int d = 0; d < eventDimensions; d++)
                   {
-                	  values[i][d] = sectors[sx1][sy1].eventDimensionValues[d];
+                     values[i][d] = sectors[sx1][sy1].eventDimensionValues[d];
                   }
                   i++;
                }
@@ -314,14 +316,14 @@ public class Morphognostic
    public int orientation;
 
    // Constructors.
-   public Morphognostic(int orientation,
-                        int eventDimensions,
-                        int NUM_NEIGHBORHOODS,
-                        int[][]          NEIGHBORHOOD_DIMENSIONS,
-                        int[]          NEIGHBORHOOD_DURATIONS)
+   public Morphognostic(int     orientation,
+                        int     eventDimensions,
+                        int     NUM_NEIGHBORHOODS,
+                        int[][] NEIGHBORHOOD_DIMENSIONS,
+                        int[]   NEIGHBORHOOD_DURATIONS)
    {
       this.orientation             = orientation;
-      this.eventDimensions    = eventDimensions;
+      this.eventDimensions         = eventDimensions;
       this.NUM_NEIGHBORHOODS       = NUM_NEIGHBORHOODS;
       this.NEIGHBORHOOD_DIMENSIONS = new int[NUM_NEIGHBORHOODS][2];
       for (int i = 0; i < NUM_NEIGHBORHOODS; i++)
@@ -340,22 +342,22 @@ public class Morphognostic
    public Morphognostic(int orientation,
                         int eventDimensions)
    {
-      this.orientation          = orientation;
+      this.orientation     = orientation;
       this.eventDimensions = eventDimensions;
       init();
    }
 
 
    // Construct with mapped neighborhood events.
-   public Morphognostic(int orientation,
-                        int eventDimensions,
+   public Morphognostic(int         orientation,
+                        int         eventDimensions,
                         boolean[][] neighborhoodEventDimensionMap,
-                        int NUM_NEIGHBORHOODS,
-                        int[][]          NEIGHBORHOOD_DIMENSIONS,
-                        int[]          NEIGHBORHOOD_DURATIONS)
+                        int         NUM_NEIGHBORHOODS,
+                        int[][]     NEIGHBORHOOD_DIMENSIONS,
+                        int[]       NEIGHBORHOOD_DURATIONS)
    {
       this.orientation             = orientation;
-      this.eventDimensions              = eventDimensions;
+      this.eventDimensions         = eventDimensions;
       this.NUM_NEIGHBORHOODS       = NUM_NEIGHBORHOODS;
       this.NEIGHBORHOOD_DIMENSIONS = new int[NUM_NEIGHBORHOODS][2];
       for (int i = 0; i < NUM_NEIGHBORHOODS; i++)
@@ -372,12 +374,12 @@ public class Morphognostic
    }
 
 
-   public Morphognostic(int orientation,
-                        int eventDimensions,
+   public Morphognostic(int         orientation,
+                        int         eventDimensions,
                         boolean[][] neighborhoodEventDimensionMap)
    {
-      this.orientation          = orientation;
-      this.eventDimensions           = eventDimensions;
+      this.orientation     = orientation;
+      this.eventDimensions = eventDimensions;
       init(neighborhoodEventDimensionMap);
    }
 
@@ -414,8 +416,8 @@ public class Morphognostic
       {
          maxEventAge = 0;
       }
-      events     = new ArrayList<Event>();
-      eventTime  = 0;
+      events              = new ArrayList<Event>();
+      eventTime           = 0;
       eventDimensionNames = null;
    }
 
@@ -448,37 +450,37 @@ public class Morphognostic
       {
          neighborhoods.get(i).update(cx, cy, wrapWorld);
       }
-      
+
       // Normalize neighborhood event dimension values.
       // Normalize neighborhood event dimension values.
       for (int d = 0; d < eventDimensions; d++)
       {
-    	  float max = 0.0f;
-	      for (int i = 0; i < NUM_NEIGHBORHOODS; i++)
-	      {
-	         Neighborhood neighborhood = neighborhoods.get(i);
-	         if (max < neighborhood.eventDimensionMaxValues[d])
-	         {
-	        	 max = neighborhood.eventDimensionMaxValues[d]; 
-	         }
-	      }
-	      if (max > 0.0f)
-	      {
-		      for (int i = 0; i < NUM_NEIGHBORHOODS; i++)
-		      {
-		         Neighborhood neighborhood = neighborhoods.get(i);
-		         for (int sx1 = 0, sx2 = neighborhood.sectors.length; sx1 < sx2; sx1++)
-		         {
-		            for (int sy1 = 0, sy2 = neighborhood.sectors.length; sy1 < sy2; sy1++)
-		            {
-		               Neighborhood.Sector s = neighborhood.sectors[sx1][sy1];
-		               s.eventDimensionValues[d] /= max;
-		            }
-		         }
-	         }	         
-	      }
+         float max = 0.0f;
+         for (int i = 0; i < NUM_NEIGHBORHOODS; i++)
+         {
+            Neighborhood neighborhood = neighborhoods.get(i);
+            if (max < neighborhood.eventDimensionMaxValues[d])
+            {
+               max = neighborhood.eventDimensionMaxValues[d];
+            }
+         }
+         if (max > 0.0f)
+         {
+            for (int i = 0; i < NUM_NEIGHBORHOODS; i++)
+            {
+               Neighborhood neighborhood = neighborhoods.get(i);
+               for (int sx1 = 0, sx2 = neighborhood.sectors.length; sx1 < sx2; sx1++)
+               {
+                  for (int sy1 = 0, sy2 = neighborhood.sectors.length; sy1 < sy2; sy1++)
+                  {
+                     Neighborhood.Sector s = neighborhood.sectors[sx1][sy1];
+                     s.eventDimensionValues[d] /= max;
+                  }
+               }
+            }
+         }
       }
-      
+
       // Update event time.
       eventTime++;
    }
@@ -509,7 +511,7 @@ public class Morphognostic
                Neighborhood.Sector s = n.sectors[x][y];
                for (int d = 0; d < eventDimensions; d++)
                {
-                     s.eventDimensionValues[d] = 0.0f;
+                  s.eventDimensionValues[d] = 0.0f;
                }
             }
          }
@@ -561,7 +563,7 @@ public class Morphognostic
                Neighborhood.Sector s = n.sectors[x][y];
                for (int d = 0; d < eventDimensions; d++)
                {
-                     Utility.saveFloat(output, s.eventDimensionValues[d]);
+                  Utility.saveFloat(output, s.eventDimensionValues[d]);
                }
             }
          }
@@ -598,8 +600,8 @@ public class Morphognostic
       {
          NEIGHBORHOOD_DURATIONS[i] = Utility.loadInt(input);
       }
-      int orientation     = Utility.loadInt(input);
-      int eventDimensions = Utility.loadInt(input);
+      int           orientation     = Utility.loadInt(input);
+      int           eventDimensions = Utility.loadInt(input);
       Morphognostic m = new Morphognostic(orientation,
                                           eventDimensions,
                                           NUM_NEIGHBORHOODS,
@@ -629,7 +631,7 @@ public class Morphognostic
                Neighborhood.Sector s = n.sectors[x][y];
                for (int d = 0; d < eventDimensions; d++)
                {
-                     s.eventDimensionValues[d] = Utility.loadFloat(input);
+                  s.eventDimensionValues[d] = Utility.loadFloat(input);
                }
             }
          }
@@ -684,7 +686,7 @@ public class Morphognostic
                Neighborhood.Sector s2 = n2.sectors[x][y];
                for (int d = 0; d < eventDimensions; d++)
                {
-                     s1.eventDimensionValues[d] = s2.eventDimensionValues[d];
+                  s1.eventDimensionValues[d] = s2.eventDimensionValues[d];
                }
             }
          }
@@ -701,7 +703,7 @@ public class Morphognostic
          Event event2 = m.createEvent(values, event.x, event.y, event.time);
          m.events.add(m.events.size(), event2);
       }
-      m.eventTime  = eventTime;
+      m.eventTime           = eventTime;
       m.eventDimensionNames = eventDimensionNames;
       return(m);
    }
@@ -783,7 +785,7 @@ public class Morphognostic
                      {
                         System.out.print("\t\tvalue[" + d + "] (" + eventDimensionNames[d] + ") =");
                      }
-                        System.out.println(" " + s.eventDimensionValues[d]);
+                     System.out.println(" " + s.eventDimensionValues[d]);
                   }
                }
             }

@@ -74,12 +74,12 @@ public class Main
          System.err.println(Usage);
          System.exit(1);
       }
-      
+
       MazeDriver driver = new MazeDriver(randomSeed);
       driver.train();
       driver.validate();
       driver.test();
-      
+
       System.exit(0);
    }
 }

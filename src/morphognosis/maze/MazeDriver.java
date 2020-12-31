@@ -17,14 +17,14 @@ public class MazeDriver
 {
    // Mazes.
    public static final String MAZE_DATASET_FILE_NAME = "maze_dataset.csv";
-   public ArrayList<Maze> trainingMazes;
-   public ArrayList<Maze> testingMazes;
-   public int numInputs;
-   public int numOutputs;
-  
+   public ArrayList<Maze>     trainingMazes;
+   public ArrayList<Maze>     testingMazes;
+   public int                 numInputs;
+   public int                 numOutputs;
+
    // Mouse.
-   public int numSensors;
-   public int numResponses;
+   public int   numSensors;
+   public int   numResponses;
    public Mouse mouse;
 
    // Random numbers.
@@ -38,181 +38,193 @@ public class MazeDriver
       random          = new Random();
       this.randomSeed = randomSeed;
       random.setSeed(randomSeed);
-      
+
       // Load mazes.
       loadMazes();
 
       // Create mouse.
       mouse = new Mouse(numSensors, numResponses, random);
    }
-   
+
+
    // Load mazes.
    @SuppressWarnings("unused")
    public void loadMazes()
    {
-	   trainingMazes = new ArrayList<Maze>();
-	   testingMazes = new ArrayList<Maze>();
-	   List<Integer> X_train_shape = null;
-	   List<Boolean> X_train_seq = null;
-	   List<Integer> y_train_shape = null;
-	   List<Boolean> y_train_seq = null;
-	   List<Integer> X_test_shape = null;
-	   List<Boolean> X_test_seq = null;
-	   List<Integer> y_test_shape = null;
-	   List<Boolean> y_test_seq = null;		   
-	   try (BufferedReader br = new BufferedReader(new FileReader(MAZE_DATASET_FILE_NAME))) 
-	   {
-		   // Load dataset.
-	       String line;
-	       if ((line = br.readLine()) != null) 
-	       {
-	           X_train_shape = Arrays.stream(line.split(","))
-	                   .map(Integer::parseInt)
-	                   .collect(Collectors.toList());           
-	       } else {
-	    	   System.err.println("Cannot load X_train_shape from file " + MAZE_DATASET_FILE_NAME);
-	    	   System.exit(1);
-	       }
-	       if ((line = br.readLine()) != null) 
-	       {
-	           X_train_seq = Arrays.stream(line.split(","))
-	                   .map(Boolean::parseBoolean)
-	                   .collect(Collectors.toList());
-	       } else {
-	    	   System.err.println("Cannot load X_train_seq from file " + MAZE_DATASET_FILE_NAME);
-	    	   System.exit(1);	           
-	       }
-	       if ((line = br.readLine()) != null) 
-	       {
-	           y_train_shape = Arrays.stream(line.split(","))
-	                   .map(Integer::parseInt)
-	                   .collect(Collectors.toList());           
-	       } else {
-	    	   System.err.println("Cannot load y_train_shape from file " + MAZE_DATASET_FILE_NAME);
-	    	   System.exit(1);
-	       }
-	       if ((line = br.readLine()) != null) 
-	       {
-	           y_train_seq = Arrays.stream(line.split(","))
-	                   .map(Boolean::parseBoolean)
-	                   .collect(Collectors.toList());
-	       } else {
-	    	   System.err.println("Cannot load y_train_seq from file " + MAZE_DATASET_FILE_NAME);
-	    	   System.exit(1);	           
-	       }
-	       if ((line = br.readLine()) != null) 
-	       {
-	           X_test_shape = Arrays.stream(line.split(","))
-	                   .map(Integer::parseInt)
-	                   .collect(Collectors.toList());           
-	       } else {
-	    	   System.err.println("Cannot load X_test_shape from file " + MAZE_DATASET_FILE_NAME);
-	    	   System.exit(1);
-	       }
-	       if ((line = br.readLine()) != null) 
-	       {
-	           X_test_seq = Arrays.stream(line.split(","))
-	                   .map(Boolean::parseBoolean)
-	                   .collect(Collectors.toList());
-	       } else {
-	    	   System.err.println("Cannot load X_test_seq from file " + MAZE_DATASET_FILE_NAME);
-	    	   System.exit(1);	           
-	       }
-	       if ((line = br.readLine()) != null) 
-	       {
-	           y_test_shape = Arrays.stream(line.split(","))
-	                   .map(Integer::parseInt)
-	                   .collect(Collectors.toList());           
-	       } else {
-	    	   System.err.println("Cannot load y_test_shape from file " + MAZE_DATASET_FILE_NAME);
-	    	   System.exit(1);
-	       }
-	       if ((line = br.readLine()) != null) 
-	       {
-	           y_test_seq = Arrays.stream(line.split(","))
-	                   .map(Boolean::parseBoolean)
-	                   .collect(Collectors.toList());
-	       } else {
-	    	   System.err.println("Cannot load y_test_seq from file " + MAZE_DATASET_FILE_NAME);
-	    	   System.exit(1);	           
-	       }
-	       
-	       // Set mouse sensor and response parameters.
-	       numSensors = X_train_shape.get(2);
-	       numResponses = y_train_shape.get(2);
-	       
-	       // Initialize training mazes.
-	       int X_idx = 0;
-	       int y_idx = 0;
-	       int num_seqs = X_train_shape.get(0);
-	       int num_steps = X_train_shape.get(1);
-	       int num_sensors = X_train_shape.get(2);
-	       int num_responses = y_train_shape.get(2);
-	       for (int seq = 0; seq < num_seqs; seq++)
-	       {
-	    	   Maze maze = new Maze();
-	    	   for (int step = 0; step < num_steps; step++)
-	    	   {
-	    		   float[] sensors = new float[num_sensors];
-	    		   for (int i = 0; i < num_sensors; i++)
-	    		   {
-	    			   if (X_train_seq.get(X_idx++))
-	    			   {
-	    				   sensors[i] = 1.0f;
-	    			   } else {
-	    				   sensors[i] = 0.0f;
-	    			   }
-	    		   }
-	    		   maze.addSensors(sensors);
-	    		   for (int i = 0; i < num_responses; i++)
-	    		   {
-	    			   if (y_train_seq.get(y_idx++))
-	    			   {
-	    				   maze.addResponse(i);
-	    			   }
-	    		   }    		   
-	    	   }
-	    	   trainingMazes.add(maze);
-	       }
-	       
-	       // Initialize testing mazes.
-	       X_idx = 0;
-	       y_idx = 0;
-	       num_seqs = X_test_shape.get(0);
-	       for (int seq = 0; seq < num_seqs; seq++)
-	       {
-	    	   Maze maze = new Maze();
-	    	   for (int step = 0; step < num_steps; step++)
-	    	   {
-	    		   float[] sensors = new float[num_sensors];
-	    		   for (int i = 0; i < num_sensors; i++)
-	    		   {
-	    			   if (X_test_seq.get(X_idx++))
-	    			   {
-	    				   sensors[i] = 1.0f;
-	    			   } else {
-	    				   sensors[i] = 0.0f;
-	    			   }
-	    		   }
-	    		   for (int i = 0; i < num_responses; i++)
-	    		   {
-	    			   if (y_test_seq.get(y_idx++))
-	    			   {
-	    				   maze.addResponse(i);
-	    			   }
-	    		   }    		       		   
-	    	   }
-	    	   testingMazes.add(maze);
-	       }	       
-	   } catch (FileNotFoundException e) 
-	   {
-		   System.err.println("Cannot find file " + MAZE_DATASET_FILE_NAME);
-		   System.exit(1);
-		} catch (Exception e) 
-		{
-			   System.err.println("Cannot load mazes from " + MAZE_DATASET_FILE_NAME);
-			   System.exit(1);
-		}	   
+      trainingMazes = new ArrayList<Maze>();
+      testingMazes  = new ArrayList<Maze>();
+      List<Integer> X_train_shape = null;
+      List<Float>   X_train_seq   = null;
+      List<Integer> y_train_shape = null;
+      List<Float>   y_train_seq   = null;
+      List<Integer> X_test_shape  = null;
+      List<Float>   X_test_seq    = null;
+      List<Integer> y_test_shape  = null;
+      List<Float>   y_test_seq    = null;
+      try (BufferedReader br = new BufferedReader(new FileReader(MAZE_DATASET_FILE_NAME)))
+         {
+            // Load dataset.
+            String line;
+            if ((line = br.readLine()) != null)
+            {
+               X_train_shape = Arrays.stream(line.split(","))
+                                  .map(Integer::parseInt)
+                                  .collect(Collectors.toList());
+            }
+            else
+            {
+               System.err.println("Cannot load X_train_shape from file " + MAZE_DATASET_FILE_NAME);
+               System.exit(1);
+            }
+            if ((line = br.readLine()) != null)
+            {
+               X_train_seq = Arrays.stream(line.split(","))
+                                .map(Float::parseFloat)
+                                .collect(Collectors.toList());
+            }
+            else
+            {
+               System.err.println("Cannot load X_train_seq from file " + MAZE_DATASET_FILE_NAME);
+               System.exit(1);
+            }
+            if ((line = br.readLine()) != null)
+            {
+               y_train_shape = Arrays.stream(line.split(","))
+                                  .map(Integer::parseInt)
+                                  .collect(Collectors.toList());
+            }
+            else
+            {
+               System.err.println("Cannot load y_train_shape from file " + MAZE_DATASET_FILE_NAME);
+               System.exit(1);
+            }
+            if ((line = br.readLine()) != null)
+            {
+               y_train_seq = Arrays.stream(line.split(","))
+                                .map(Float::parseFloat)
+                                .collect(Collectors.toList());
+            }
+            else
+            {
+               System.err.println("Cannot load y_train_seq from file " + MAZE_DATASET_FILE_NAME);
+               System.exit(1);
+            }
+            if ((line = br.readLine()) != null)
+            {
+               X_test_shape = Arrays.stream(line.split(","))
+                                 .map(Integer::parseInt)
+                                 .collect(Collectors.toList());
+            }
+            else
+            {
+               System.err.println("Cannot load X_test_shape from file " + MAZE_DATASET_FILE_NAME);
+               System.exit(1);
+            }
+            if ((line = br.readLine()) != null)
+            {
+               X_test_seq = Arrays.stream(line.split(","))
+                               .map(Float::parseFloat)
+                               .collect(Collectors.toList());
+            }
+            else
+            {
+               System.err.println("Cannot load X_test_seq from file " + MAZE_DATASET_FILE_NAME);
+               System.exit(1);
+            }
+            if ((line = br.readLine()) != null)
+            {
+               y_test_shape = Arrays.stream(line.split(","))
+                                 .map(Integer::parseInt)
+                                 .collect(Collectors.toList());
+            }
+            else
+            {
+               System.err.println("Cannot load y_test_shape from file " + MAZE_DATASET_FILE_NAME);
+               System.exit(1);
+            }
+            if ((line = br.readLine()) != null)
+            {
+               y_test_seq = Arrays.stream(line.split(","))
+                               .map(Float::parseFloat)
+                               .collect(Collectors.toList());
+            }
+            else
+            {
+               System.err.println("Cannot load y_test_seq from file " + MAZE_DATASET_FILE_NAME);
+               System.exit(1);
+            }
+
+            // Set mouse sensor and response parameters.
+            numSensors   = X_train_shape.get(2);
+            numResponses = y_train_shape.get(2);
+
+            // Initialize training mazes.
+            int X_idx         = 0;
+            int y_idx         = 0;
+            int num_seqs      = X_train_shape.get(0);
+            int num_steps     = X_train_shape.get(1);
+            int num_sensors   = X_train_shape.get(2);
+            int num_responses = y_train_shape.get(2);
+            for (int seq = 0; seq < num_seqs; seq++)
+            {
+               Maze maze = new Maze();
+               for (int step = 0; step < num_steps; step++)
+               {
+                  float[] sensors = new float[num_sensors];
+                  for (int i = 0; i < num_sensors; i++)
+                  {
+                     sensors[i] = X_train_seq.get(X_idx++);
+                  }
+                  maze.addSensors(sensors);
+                  for (int i = 0; i < num_responses; i++)
+                  {
+                     if (y_train_seq.get(y_idx++) > 0.0f)
+                     {
+                        maze.addResponse(i);
+                     }
+                  }
+               }
+               trainingMazes.add(maze);
+            }
+
+            // Initialize testing mazes.
+            X_idx     = 0;
+            y_idx     = 0;
+            num_seqs  = X_test_shape.get(0);
+            num_steps = X_test_shape.get(1);
+            for (int seq = 0; seq < num_seqs; seq++)
+            {
+               Maze maze = new Maze();
+               for (int step = 0; step < num_steps; step++)
+               {
+                  float[] sensors = new float[num_sensors];
+                  for (int i = 0; i < num_sensors; i++)
+                  {
+                     sensors[i] = X_test_seq.get(X_idx++);
+                  }
+                  maze.addSensors(sensors);
+                  for (int i = 0; i < num_responses; i++)
+                  {
+                     if (y_test_seq.get(y_idx++) > 0.0f)
+                     {
+                        maze.addResponse(i);
+                     }
+                  }
+               }
+               testingMazes.add(maze);
+            }
+         }
+         catch (FileNotFoundException e)
+         {
+            System.err.println("Cannot find file " + MAZE_DATASET_FILE_NAME);
+            System.exit(1);
+         }
+         catch (Exception e)
+         {
+            System.err.println("Cannot load mazes from " + MAZE_DATASET_FILE_NAME);
+            System.exit(1);
+         }
+
    }
 
 
@@ -223,72 +235,75 @@ public class MazeDriver
       random.setSeed(randomSeed);
       for (Maze maze : trainingMazes)
       {
-    	  maze.reset();
+         maze.reset();
       }
       for (Maze maze : testingMazes)
       {
-    	  maze.reset();
+         maze.reset();
       }
       mouse.reset();
    }
 
+
    // Train mouse on mazes.
    public void train()
    {
-	   System.out.println("Train");
-	   mouse.driver = Driver.TRAINING_OVERRIDE;
-	   for (Maze maze : trainingMazes)
-	   {
-		   maze.reset();
-		   mouse.reset();
-		   float[] sensors = null;
-		   while ((sensors = maze.nextSensors()) != null)
-		   {
-			   mouse.overrideResponse = maze.nextResponse();
-			   mouse.cycle(sensors);
-		   }
-	   }
+      System.out.println("Train");
+      mouse.driver = Driver.TRAINING_OVERRIDE;
+      for (Maze maze : trainingMazes)
+      {
+         maze.reset();
+         mouse.reset();
+         float[] sensors = null;
+         while ((sensors = maze.nextSensors()) != null)
+         {
+            mouse.overrideResponse = maze.nextResponse();
+            mouse.cycle(sensors);
+         }
+      }
    }
-   
+
+
    // Validate training.
    public void validate()
    {
-	   System.out.println("Validate training");
-	   mouse.driver = Driver.METAMORPH_DB;
-	   int n = 0;
-	   for (Maze maze : trainingMazes)
-	   {
-		   System.out.println("Maze " + n++);
-		   maze.reset();
-		   mouse.reset();
-		   float[] sensors = null;
-		   while ((sensors = maze.nextSensors()) != null)
-		   {
-			   int response = mouse.cycle(sensors);
-			   int correctResponse = maze.nextResponse();
-			   System.out.println("response=" + response + ", correct response=" + correctResponse);
-		   }
-	   }
+      System.out.println("Validate training");
+      mouse.driver = Driver.METAMORPH_DB;
+      int n = 0;
+      for (Maze maze : trainingMazes)
+      {
+         System.out.println("Maze " + n++);
+         maze.reset();
+         mouse.reset();
+         float[] sensors = null;
+         while ((sensors = maze.nextSensors()) != null)
+         {
+            int response        = mouse.cycle(sensors);
+            int correctResponse = maze.nextResponse();
+            System.out.println("response=" + response + ", correct response=" + correctResponse);
+         }
+      }
    }
-   
+
+
    // Test mouse on mazes.
    public void test()
    {
-	   System.out.println("Test");
-	   mouse.driver = Driver.METAMORPH_DB;
-	   int n = 0;
-	   for (Maze maze : testingMazes)
-	   {
-		   System.out.println("Maze " + n++);
-		   maze.reset();
-		   mouse.reset();
-		   float[] sensors = null;
-		   while ((sensors = maze.nextSensors()) != null)
-		   {
-			   int response = mouse.cycle(sensors);
-			   int correctResponse = maze.nextResponse();
-			   System.out.println("response=" + response + ", correct response=" + correctResponse);
-		   }
-	   }
+      System.out.println("Test");
+      mouse.driver = Driver.METAMORPH_DB;
+      int n = 0;
+      for (Maze maze : testingMazes)
+      {
+         System.out.println("Maze " + n++);
+         maze.reset();
+         mouse.reset();
+         float[] sensors = null;
+         while ((sensors = maze.nextSensors()) != null)
+         {
+            int response        = mouse.cycle(sensors);
+            int correctResponse = maze.nextResponse();
+            System.out.println("response=" + response + ", correct response=" + correctResponse);
+         }
+      }
    }
 }

@@ -6,7 +6,7 @@ package morphognosis.maze;
 
 public class Driver
 {
-   public static final int TRAINING_OVERRIDE                 = 0;
+   public static final int TRAINING_OVERRIDE         = 0;
    public static final int METAMORPH_DB              = 1;
    public static final int METAMORPH_NN              = 2;
    public static final int METAMORPH_GOAL_SEEKING_DB = 3;

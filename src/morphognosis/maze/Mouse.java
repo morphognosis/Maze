@@ -26,25 +26,25 @@ import morphognosis.Morphognostic.Neighborhood;
 
 public class Mouse
 {
-	// Random numbers.
-   public Random  random;
+   // Random numbers.
+   public Random random;
 
    // Sensors.
    public static int NUM_SENSORS = -1;
-   public float[] sensors;
+   public float[]    sensors;
 
    // Response.
    public static int NUM_RESPONSES = -1;
-   public static int WAIT_RESPONSE = -1;   
-   public int response;
-   public int overrideResponse;
-   
+   public static int WAIT_RESPONSE = -1;
+   public int        response;
+   public int        overrideResponse;
+
    // Driver.
-   public int     driver;
-   
+   public int driver;
+
    // Morphognostic.
    public Morphognostic morphognostic;
-   
+
    // Metamorphs.
    public int currentMetamorphIdx;
    public ArrayList<Metamorph> metamorphs;
@@ -57,11 +57,11 @@ public class Mouse
 
    // Maximum distance between equivalent morphognostics.
    public static float EQUIVALENT_MORPHOGNOSTIC_DISTANCE = 0.0f;
-   
+
    // Goal-seeking parameters.
-   public static final float SOLVE_MAZE_GOAL_VALUE  = 1.0f;
-   public static final float GOAL_VALUE_DISCOUNT_FACTOR = 0.9f;   
-   
+   public static final float SOLVE_MAZE_GOAL_VALUE      = 1.0f;
+   public static final float GOAL_VALUE_DISCOUNT_FACTOR = 0.9f;
+
    /*
     * Morphognostic event.
     *
@@ -78,17 +78,17 @@ public class Mouse
    // Constructor.
    public Mouse(int numSensors, int numResponses, Random random)
    {
-	   NUM_SENSORS = numSensors;
-	   NUM_RESPONSES = numResponses;
-	   WAIT_RESPONSE = NUM_RESPONSES - 1;
-      this.random = random;
+      NUM_SENSORS   = numSensors;
+      NUM_RESPONSES = numResponses;
+      WAIT_RESPONSE = NUM_RESPONSES - 1;
+      this.random   = random;
 
       sensors = new float[NUM_SENSORS];
       for (int n = 0; n < NUM_SENSORS; n++)
       {
          sensors[n] = 0.0f;
-      }  
-      response = WAIT_RESPONSE;
+      }
+      response         = WAIT_RESPONSE;
       overrideResponse = -1;
 
 
@@ -97,10 +97,10 @@ public class Mouse
       boolean[][] neighborhoodEventDimensionMap = new boolean[Parameters.NUM_NEIGHBORHOODS][eventDimensions];
       for (int i = 0; i < Parameters.NUM_NEIGHBORHOODS; i++)
       {
-            for (int j = 0; j < eventDimensions; j++)
-            {
-                  neighborhoodEventDimensionMap[i][j] = true;
-            }
+         for (int j = 0; j < eventDimensions; j++)
+         {
+            neighborhoodEventDimensionMap[i][j] = true;
+         }
       }
       morphognostic = new Morphognostic(Orientation.NORTH,
                                         eventDimensions,
@@ -108,13 +108,13 @@ public class Mouse
                                         Parameters.NUM_NEIGHBORHOODS,
                                         Parameters.NEIGHBORHOOD_DIMENSIONS,
                                         Parameters.NEIGHBORHOOD_DURATIONS);
-      
+
       // Create metamorphs.
       currentMetamorphIdx = -1;
       metamorphs          = new ArrayList<Metamorph>();
-      
+
       // Initialize driver.
-      driver         = Driver.TRAINING_OVERRIDE;
+      driver = Driver.TRAINING_OVERRIDE;
    }
 
 
@@ -125,7 +125,7 @@ public class Mouse
       {
          sensors[i] = 0.0f;
       }
-      response = WAIT_RESPONSE;
+      response         = WAIT_RESPONSE;
       overrideResponse = -1;
       morphognostic.clear();
       currentMetamorphIdx = -1;
@@ -180,8 +180,8 @@ public class Mouse
    // Load mouse.
    public void load(DataInputStream reader) throws IOException
    {
-      morphognostic           = Morphognostic.load(reader);
-      driver                = Utility.loadInt(reader);
+      morphognostic = Morphognostic.load(reader);
+      driver        = Utility.loadInt(reader);
    }
 
 
@@ -223,7 +223,7 @@ public class Mouse
       // Update metamorphs if training.
       if (driver == Driver.TRAINING_OVERRIDE)
       {
-        updateMetamorphs(morphognostic, response, goalValue(sensors, response));
+         updateMetamorphs(morphognostic, response, goalValue(sensors, response));
       }
 
       return(response);
@@ -233,7 +233,7 @@ public class Mouse
    // Determine sensory-response goal value.
    public float goalValue(float[] sensors, int response)
    {
-	   return 0.0f;
+      return(0.0f);
    }
 
 
@@ -243,55 +243,57 @@ public class Mouse
       morphognostic.update(sensors, 0, 0);
    }
 
+
    // Get metamorph DB response.
    public void metamorphDBresponse()
    {
-         Metamorph metamorph = null;
-         float     d         = 0.0f;
-         float     d2;
-         for (Metamorph m : metamorphs)
+      Metamorph metamorph = null;
+      float     d         = 0.0f;
+      float     d2;
+
+      for (Metamorph m : metamorphs)
+      {
+         d2 = morphognostic.compare(m.morphognostic);
+         if ((metamorph == null) || (d2 < d))
          {
-            d2 = morphognostic.compare(m.morphognostic);
-            if ((metamorph == null) || (d2 < d))
-            {
-               d         = d2;
-               metamorph = m;
-            }
-            else
-            {
-               if (d2 == d)
-               {
-                  if (random.nextBoolean())
-                  {
-                     d         = d2;
-                     metamorph = m;
-                  }
-               }
-            }
-         }
-         if (metamorph != null)
-         {
-            response = metamorph.response;
+            d         = d2;
+            metamorph = m;
          }
          else
          {
-            response = -1;
+            if (d2 == d)
+            {
+               if (random.nextBoolean())
+               {
+                  d         = d2;
+                  metamorph = m;
+               }
+            }
          }
+      }
+      if (metamorph != null)
+      {
+         response = metamorph.response;
+      }
+      else
+      {
+         response = -1;
+      }
    }
 
 
    // Get metamorph neural network response.
    public void metamorphNNresponse()
    {
-         if (metamorphNN != null)
-         {
-            response = metamorphNN.respond(morphognostic);
-         }
-         else
-         {
-            System.err.println("Must train metamorph neural network");
-            response = -1;
-         }
+      if (metamorphNN != null)
+      {
+         response = metamorphNN.respond(morphognostic);
+      }
+      else
+      {
+         System.err.println("Must train metamorph neural network");
+         response = -1;
+      }
    }
 
 
@@ -336,7 +338,8 @@ public class Mouse
          response = -1;
       }
    }
-   
+
+
    // Update metamorphs.
    public void updateMetamorphs(Morphognostic morphognostic, int response, float goalValue)
    {
@@ -468,7 +471,7 @@ public class Mouse
                {
                   for (int d = 0; d < morphognostic.eventDimensions; d++)
                   {
-                        writer.print(i + "-" + x + "-" + y + "-" + d + ",");
+                     writer.print(i + "-" + x + "-" + y + "-" + d + ",");
                   }
                }
             }
@@ -502,34 +505,39 @@ public class Mouse
          {
             for (int d = dx, d2 = morphognostic.eventDimensions; d < d2; d++)
             {
-                  if (skipComma)
-                  {
-                     skipComma = false;
-                  }
-                  else
-                  {
-                     output += ",";
-                  }
-                  output += (values[j][d] + "");
+               if (skipComma)
+               {
+                  skipComma = false;
+               }
+               else
+               {
+                  output += ",";
+               }
+               output += (values[j][d] + "");
             }
          }
       }
       return(output);
-   } 
-   
+   }
+
+
    // Get response name.
    public static String getResponseName(int response)
    {
-	  if (response >= 0)
-	  {
-		  if (response < WAIT_RESPONSE)
-		  {
-			  return "door " + response;
-		  } else {
-			  return "wait";
-		  }
-	  } else {
-		  return "invalid";
-	  }
-   }   
+      if (response >= 0)
+      {
+         if (response < WAIT_RESPONSE)
+         {
+            return("door " + response);
+         }
+         else
+         {
+            return("wait");
+         }
+      }
+      else
+      {
+         return("invalid");
+      }
+   }
 }

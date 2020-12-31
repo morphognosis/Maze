@@ -78,14 +78,14 @@ public class SectorDisplay extends JFrame implements Runnable
       JRadioButton values = new JRadioButton("Values", true);
       displayMode = DISPLAY_MODE.VALUES;
       values.addActionListener(new ActionListener()
+                               {
+                                  @Override
+                                  public void actionPerformed(ActionEvent e)
                                   {
-                                     @Override
-                                     public void actionPerformed(ActionEvent e)
-                                     {
-                                        displayMode = DISPLAY_MODE.VALUES;
-                                     }
+                                     displayMode = DISPLAY_MODE.VALUES;
                                   }
-                                  );
+                               }
+                               );
       JRadioButton names = new JRadioButton("Names");
       names.addActionListener(new ActionListener()
                               {
@@ -164,7 +164,7 @@ public class SectorDisplay extends JFrame implements Runnable
       Color[] colors = new Color[morphognostic.eventDimensions];
       for (d = 0; d < morphognostic.eventDimensions; d++)
       {
-            colors[d] = getEventDimensionColor(d);
+         colors[d] = getEventDimensionColor(d);
       }
 
       if (displayMode == DISPLAY_MODE.VALUES)
@@ -180,9 +180,9 @@ public class SectorDisplay extends JFrame implements Runnable
          {
             if (neighborhood.eventDimensionMap[d])
             {
-                  imageGraphics.setColor(colors[d]);
-                  h = (int)((float)imageSize.height * sector.getEventDimensionValue(d));
-                  imageGraphics.fillRect((int)fx, imageSize.height - h, (int)(fw + 1.0), h);
+               imageGraphics.setColor(colors[d]);
+               h = (int)((float)imageSize.height * sector.getEventDimensionValue(d));
+               imageGraphics.fillRect((int)fx, imageSize.height - h, (int)(fw + 1.0), h);
             }
          }
          imageGraphics.setColor(Color.black);
@@ -232,14 +232,16 @@ public class SectorDisplay extends JFrame implements Runnable
       canvasGraphics.drawImage(image, 0, 0, this);
    }
 
+
    // Get event dimension color.
    public static Color getEventDimensionColor(int dimension)
    {
-         Random random = new Random();
-            random.setSeed(((dimension + 3) * 1000));
-            float r = random.nextFloat();
-            float g = random.nextFloat();
-            float b = random.nextFloat();
-            return(new Color(r, g, b));
+      Random random = new Random();
+
+      random.setSeed(((dimension + 3) * 1000));
+      float r = random.nextFloat();
+      float g = random.nextFloat();
+      float b = random.nextFloat();
+      return(new Color(r, g, b));
    }
 }

@@ -12,9 +12,9 @@ import morphognosis.Utility;
 public class Parameters
 {
    // Morphognosis parameters.
-   public static int     NUM_NEIGHBORHOODS        = 6;
-   public static int[][] NEIGHBORHOOD_DIMENSIONS  = { { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 } };
-   public static int[]   NEIGHBORHOOD_DURATIONS   = { 1, 1, 1, 1, 1, 10 };
+   public static int     NUM_NEIGHBORHOODS       = 6;
+   public static int[][] NEIGHBORHOOD_DIMENSIONS = { { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 } };
+   public static int[]   NEIGHBORHOOD_DURATIONS  = { 1, 1, 1, 1, 1, 10 };
 
    // Metamorph neural network parameters.
    public static double NN_LEARNING_RATE = 0.1;
