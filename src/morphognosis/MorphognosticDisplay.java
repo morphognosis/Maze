@@ -25,9 +25,6 @@ public class MorphognosticDisplay extends JPanel implements ItemListener, Action
 {
    private static final long serialVersionUID = 0L;
 
-   // ID.
-   int id;
-
    // Morphognostic.
    Morphognostic morphognostic;
 
@@ -39,9 +36,8 @@ public class MorphognosticDisplay extends JPanel implements ItemListener, Action
    JButton               hideButton;
 
    // Constructor.
-   public MorphognosticDisplay(int id, Morphognostic morphognostic)
+   public MorphognosticDisplay(Morphognostic morphognostic)
    {
-      this.id            = id;
       this.morphognostic = morphognostic;
       setLayout(new BorderLayout());
       setBorder(BorderFactory.createTitledBorder(

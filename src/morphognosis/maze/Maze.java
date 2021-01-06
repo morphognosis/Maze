@@ -14,16 +14,11 @@ public class Maze
    // Response sequence.
    public ArrayList<Integer> responseSequence;
 
-   // Sequence cursors.
-   public int sensorsCursor;
-   public int responseCursor;
-
    // Constructor.
    public Maze()
    {
       sensorSequence   = new ArrayList<float[]>();
       responseSequence = new ArrayList<Integer>();
-      sensorsCursor    = responseCursor = 0;
    }
 
 
@@ -40,20 +35,12 @@ public class Maze
       responseSequence.add(response);
    }
 
-
-   // Reset cursors.
-   public void reset()
+   // Get sensors.
+   public float[] getSensors(int index)
    {
-      sensorsCursor = responseCursor = 0;
-   }
-
-
-   // Next sensors.
-   public float[] nextSensors()
-   {
-      if (sensorsCursor < sensorSequence.size())
+      if (index < sensorSequence.size())
       {
-         return(sensorSequence.get(sensorsCursor++));
+         return(sensorSequence.get(index));
       }
       else
       {
@@ -61,21 +48,19 @@ public class Maze
       }
    }
 
-
-   // Next response.
-   public int nextResponse()
+   // Get response.
+   public int getResponse(int index)
    {
-      if (responseCursor < responseSequence.size())
+      if (index < responseSequence.size())
       {
-         return(responseSequence.get(responseCursor++));
+         return(responseSequence.get(index));
       }
       else
       {
          return(-1);
       }
    }
-
-
+   
    // Print.
    public void print()
    {

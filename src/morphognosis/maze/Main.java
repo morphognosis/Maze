@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Tom Portegys (portegys@gmail.com). All rights reserved.
+ * Copyright (c) 2021 Tom Portegys (portegys@gmail.com). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -27,7 +27,7 @@
 package morphognosis.maze;
 
 import java.util.Random;
-
+import javax.swing.UIManager;
 import morphognosis.Morphognosis;
 
 public class Main
@@ -41,13 +41,118 @@ public class Main
    // Usage.
    public static final String Usage =
       "Usage:\n" +
+      "    java morphognosis.maze.Main\n" +
+      "      [-batch (batch mode)]\n" +
+      "      [-responseDriver <metamorphDB | metamorphNN> (response driver, default=metamorphDB)]\n" +
+      "      [-randomSeed <random number seed> (default=" + DEFAULT_RANDOM_SEED + ")]\n" +
+      "      [-writeMetamorphDataset [<file name>] (default=" + Mouse.METAMORPH_DATASET_FILE_NAME + ")]\n" +
+      "      Metamorph Weka neural network parameters:\n" +
+      "        [-NNlearningRate <quantity> (default=" + Parameters.NN_LEARNING_RATE + ")]\n" +
+      "        [-NNmomentum <quantity> (default=" + Parameters.NN_MOMENTUM + ")]\n" +
+      "        [-NNhiddenLayers <quantity> (default=\"" + Parameters.NN_HIDDEN_LAYERS + "\")]\n" +
+      "        [-NNtrainingTime <quantity> (default=" + Parameters.NN_TRAINING_TIME + ")]\n" +      
+      "  Print parameters:\n" +
+      "    java morphognosis.maze.Main -printParameters\n" +
+      "  Version:\n" +
+      "    java morphognosis.maze.Main -version\n" +
       "Exit codes:\n" +
       "  0=success\n" +
       "  1=error";
 
+   // Maze driver.
+   public static MazeDriver mazeDriver;
+   
+   // Response driver.
+   public static int responseDriver;
+
+   // Maze dashboard.
+   public static MazeDashboard mazeDashboard;
+   
    // Random numbers.
    public static int    randomSeed = DEFAULT_RANDOM_SEED;
    public static Random random;
+
+   // Run.
+   public static void run()
+   {
+      random.setSeed(randomSeed);
+      
+      // Create dashboard.
+      mazeDashboard = new MazeDashboard(mazeDriver);
+      
+      // Clear maze success counts.
+      int trainOK = 0;
+      int testOK = 0;
+      
+      // Train mazes.
+      for (int i = 0, j = mazeDriver.trainMazes.size(); i < j; i++)
+      {
+	      mazeDriver.initTrainMaze(i, ResponseDriver.TRAINING_OVERRIDE);
+	         while (mazeDriver.stepMaze()) {}
+      }
+      
+      // Validate training.
+      mazeDashboard.log("Train results:");      
+      for (int i = 0, j = mazeDriver.trainMazes.size(); i < j; i++)
+      {
+	      mazeDriver.initTrainMaze(i, responseDriver);
+	      mazeDashboard.log("Maze = " + i);
+	      boolean ok = true;
+	         while (mazeDashboard.update() && mazeDriver.stepMaze()) 
+	         {
+	        	 if (mazeDriver.response != mazeDriver.target)
+	        		 {
+	        		  ok = false;
+	        		 }
+	         }
+	         if (ok)
+	         {
+	        	 trainOK++;
+	        	 mazeDashboard.log("OK");
+	         } else {
+	        	 mazeDashboard.log("Error");
+	         }
+      }
+      
+      // Test mazes.
+      mazeDashboard.log("Test results:");      
+      for (int i = 0, j = mazeDriver.testMazes.size(); i < j; i++)
+      {
+	      mazeDriver.initTestMaze(i, responseDriver);
+	      boolean ok = true;
+	         while (mazeDashboard.update() && mazeDriver.stepMaze())
+	         {
+	        	 if (mazeDriver.response != mazeDriver.target)
+	        		 {
+	        		  ok = false;
+	        		 }
+	         }
+	         if (ok)
+	         {
+	        	 testOK++;
+	        	 mazeDashboard.log("OK");
+	         } else {
+	        	 mazeDashboard.log("Error");
+	         }
+      }
+      
+	   // Show results.
+	   String message = "Train correct/total = " + trainOK + "/" + mazeDriver.trainMazes.size();
+	   if (mazeDriver.trainMazes.size() > 0)
+	   {
+		   message += " (" + (((float)trainOK / (float)mazeDriver.trainMazes.size()) * 100.0f) + "%)";
+	   }
+	   mazeDashboard.log(message);
+	   message = "Test correct/total = " + testOK + "/" + mazeDriver.testMazes.size();
+	   if (mazeDriver.testMazes.size() > 0)
+	   {
+		   message += " (" + (((float)testOK / (float)mazeDriver.testMazes.size()) * 100.0f) + "%)";
+	   }	         
+	   mazeDashboard.log(message);
+	   
+      // Wait for quit.
+      while (mazeDashboard.update()) {}
+   }
 
    // Main.
    // Exit codes:
@@ -57,8 +162,178 @@ public class Main
    public static void main(String[] args)
    {
       // Get options.
+      responseDriver = ResponseDriver.METAMORPH_DB;
+      boolean batch               = false;
+      boolean printParms            = false;
+      boolean gotDatasetParm        = false;
+      String  datasetFilename       = Mouse.METAMORPH_DATASET_FILE_NAME;
+
       for (int i = 0; i < args.length; i++)
       {
+         if (args[i].equals("-batch"))
+         {
+               batch = true;
+            continue;
+         }
+         if (args[i].equals("-responseDriver"))
+         {
+            i++;
+            if (i >= args.length)
+            {
+               System.err.println("Invalid responseDriver option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            if (args[i].equals("metamorphDB"))
+            {
+               responseDriver = ResponseDriver.METAMORPH_DB;
+            }
+            else if (args[i].equals("metamorphNN"))
+            {
+               responseDriver = ResponseDriver.METAMORPH_NN;
+            }
+            else
+            {
+               System.err.println("Invalid responseDriver option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            continue;
+         }
+         if (args[i].equals("-NNlearningRate"))
+         {
+            i++;
+            if (i >= args.length)
+            {
+               System.err.println("Invalid NNlearningRate option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            try
+            {
+               Parameters.NN_LEARNING_RATE = Double.parseDouble(args[i]);
+            }
+            catch (NumberFormatException e) {
+               System.err.println("Invalid NNlearningRate option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            if (Parameters.NN_LEARNING_RATE < 0.0)
+            {
+               System.err.println("Invalid NNlearningRate option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            continue;
+         }
+         if (args[i].equals("-NNmomentum"))
+         {
+            i++;
+            if (i >= args.length)
+            {
+               System.err.println("Invalid NNmomentum option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            try
+            {
+               Parameters.NN_MOMENTUM = Double.parseDouble(args[i]);
+            }
+            catch (NumberFormatException e) {
+               System.err.println("Invalid NNmomentum option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            if (Parameters.NN_MOMENTUM < 0.0)
+            {
+               System.err.println("Invalid NNmomentum option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            continue;
+         }
+         if (args[i].equals("-NNhiddenLayers"))
+         {
+            i++;
+            if (i >= args.length)
+            {
+               System.err.println("Invalid NNhiddenLayers option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            Parameters.NN_HIDDEN_LAYERS = new String(args[i]);
+            if (Parameters.NN_HIDDEN_LAYERS.isEmpty())
+            {
+               System.err.println("Invalid NNhiddenLayers option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            continue;
+         }
+         if (args[i].equals("-NNtrainingTime"))
+         {
+            i++;
+            if (i >= args.length)
+            {
+               System.err.println("Invalid NNtrainingTime option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            try
+            {
+               Parameters.NN_TRAINING_TIME = Integer.parseInt(args[i]);
+            }
+            catch (NumberFormatException e) {
+               System.err.println("Invalid NNtrainingTime option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            if (Parameters.NN_TRAINING_TIME < 0)
+            {
+               System.err.println("Invalid NNtrainingTime option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            continue;
+         }
+         if (args[i].equals("-randomSeed"))
+         {
+            i++;
+            if (i >= args.length)
+            {
+               System.err.println("Invalid randomSeed option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            try
+            {
+               randomSeed = Integer.parseInt(args[i]);
+            }
+            catch (NumberFormatException e) {
+               System.err.println("Invalid randomSeed option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            continue;
+         }
+         if (args[i].equals("-printParameters"))
+         {
+            printParms = true;
+            continue;
+         }
+         if (args[i].equals("-writeMetamorphDataset"))
+         {
+            gotDatasetParm = true;
+            if (i < args.length - 1)
+            {
+               if (!args[i + 1].startsWith("-"))
+               {
+                  i++;
+                  datasetFilename = args[i];
+               }
+            }
+            continue;
+         }
          if (args[i].equals("-help") || args[i].equals("-h") || args[i].equals("-?"))
          {
             System.out.println(Usage);
@@ -75,11 +350,54 @@ public class Main
          System.exit(1);
       }
 
-      MazeDriver driver = new MazeDriver(randomSeed);
-      driver.train();
-      driver.validate();
-      driver.test();
+      // Print parameters?
+      if (printParms)
+      {
+         System.out.println("Parameters:");
+         Parameters.print();
+         System.exit(0);
+      }
 
+      // Set look and feel.
+      try
+      {
+         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+      }
+      catch (Exception e)
+      {
+         System.err.println("Warning: cannot set look and feel");
+      }
+
+      // Initialize random numbers.
+      random = new Random();
+      random.setSeed(randomSeed);
+      
+      // Create maze driver.
+      mazeDriver = new MazeDriver(responseDriver, randomSeed);
+
+      // Batch run?
+      if (batch)
+      {
+         mazeDriver.run();
+      } else {
+    	  
+    	  // Run with dashboards.
+    	  run();
+      }
+      
+      // Write metamorph dataset?
+      if (gotDatasetParm)
+      {
+         try
+         {
+            mazeDriver.mouse.writeMetamorphDataset(datasetFilename);
+         }
+         catch (Exception e)
+         {
+            System.err.println("Cannot write metamorph dataset to file " + datasetFilename + ": " + e.getMessage());
+            System.exit(1);
+         }
+      }
       System.exit(0);
    }
 }

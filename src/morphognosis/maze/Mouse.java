@@ -39,8 +39,8 @@ public class Mouse
    public int        response;
    public int        overrideResponse;
 
-   // Driver.
-   public int driver;
+   // Response driver.
+   public int responseDriver;
 
    // Morphognostic.
    public Morphognostic morphognostic;
@@ -53,7 +53,7 @@ public class Mouse
    public MetamorphNN metamorphNN;
 
    // Metamorph dataset file name.
-   public static final String METAMORPH_DATASET_FILE_NAME = "metamorphs.dat";
+   public static final String METAMORPH_DATASET_FILE_NAME = "metamorphs.csv";
 
    // Maximum distance between equivalent morphognostics.
    public static float EQUIVALENT_MORPHOGNOSTIC_DISTANCE = 0.0f;
@@ -113,8 +113,8 @@ public class Mouse
       currentMetamorphIdx = -1;
       metamorphs          = new ArrayList<Metamorph>();
 
-      // Initialize driver.
-      driver = Driver.TRAINING_OVERRIDE;
+      // Initialize response driver.
+      responseDriver = ResponseDriver.TRAINING_OVERRIDE;
    }
 
 
@@ -154,7 +154,7 @@ public class Mouse
    public void save(DataOutputStream writer) throws IOException
    {
       morphognostic.save(writer);
-      Utility.saveInt(writer, driver);
+      Utility.saveInt(writer, responseDriver);
       writer.flush();
    }
 
@@ -181,7 +181,7 @@ public class Mouse
    public void load(DataInputStream reader) throws IOException
    {
       morphognostic = Morphognostic.load(reader);
-      driver        = Utility.loadInt(reader);
+      responseDriver        = Utility.loadInt(reader);
    }
 
 
@@ -197,31 +197,23 @@ public class Mouse
       updateMorphognostic();
 
       // Respond.
-      switch (driver)
+      switch (responseDriver)
       {
-      case Driver.TRAINING_OVERRIDE:
+      case ResponseDriver.TRAINING_OVERRIDE:
          response = overrideResponse;
          break;
 
-      case Driver.METAMORPH_DB:
+      case ResponseDriver.METAMORPH_DB:
          metamorphDBresponse();
          break;
 
-      case Driver.METAMORPH_NN:
+      case ResponseDriver.METAMORPH_NN:
          metamorphNNresponse();
-         break;
-
-      case Driver.METAMORPH_GOAL_SEEKING_DB:
-         metamorphGoalSeekingDBresponse();
-         break;
-
-      case Driver.METAMORPH_GOAL_SEEKING_NN:
-         response = 0;
          break;
       }
 
       // Update metamorphs if training.
-      if (driver == Driver.TRAINING_OVERRIDE)
+      if (responseDriver == ResponseDriver.TRAINING_OVERRIDE)
       {
          updateMetamorphs(morphognostic, response, goalValue(sensors, response));
       }

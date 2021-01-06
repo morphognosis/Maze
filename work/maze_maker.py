@@ -492,7 +492,7 @@ if verbose:
             else:
                 print(' (wait)')
 
-    print('Testing mazes:')
+    print('Test mazes:')
     seq = array(X_test_seq)
     X = seq.reshape(X_test_shape[0], X_test_shape[1], X_test_shape[2])
     seq = array(y_test_seq)

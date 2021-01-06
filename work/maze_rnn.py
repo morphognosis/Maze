@@ -56,22 +56,22 @@ y = seq.reshape(y_train_shape[0], y_train_shape[1], y_train_shape[2])
 predictions = model.predict(X, batch_size=X_train_shape[0], verbose=0)
 print('Train results:')
 for seq in range(X_train_shape[0]):
-    print('sequence =', seq, 'predictions: ', end='')
+    print('Maze =', seq, 'responses: ', end='')
     p = []
     for step in range(X_train_shape[1]):
         r = argmax(predictions[seq][step])
         p.append(r)
-        print(r, ' ', end='')
+        print(r, ' ', sep='', end='')
     print('targets: ', end='')
     t = []
     for step in range(X_train_shape[1]):
         r = argmax(y[seq][step])
         t.append(r)
-        print(r, ' ', end='')
+        print(r, ' ', sep='', end='')
     if p == t:
         print('OK')
     else:
-        print('error')
+        print('Error')
 
 seq = array(X_test_seq)
 X = seq.reshape(X_test_shape[0], X_test_shape[1], X_test_shape[2])
@@ -82,20 +82,20 @@ y = seq.reshape(y_test_shape[0], y_test_shape[1], y_test_shape[2])
 predictions = model.predict(X, batch_size=X_test_shape[0], verbose=0)
 print('Test results:')
 for seq in range(X_test_shape[0]):
-    print('sequence =', seq, 'predictions: ', end='')
+    print('Maze =', seq, 'responses: ', end='')
     p = []
     for step in range(X_test_shape[1]):
         r = argmax(predictions[seq][step])
         p.append(r)
-        print(r, ' ', end='')
+        print(r, ' ', sep='', end='')
     print('targets: ', end='')
     t = []
     for step in range(X_test_shape[1]):
         r = argmax(y[seq][step])
         t.append(r)
-        print(r, ' ', end='')
+        print(r, ' ', sep='', end='')
     if p == t:
         print('OK')
     else:
-        print('error')
+        print('Error')
 
