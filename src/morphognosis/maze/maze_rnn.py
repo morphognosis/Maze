@@ -55,6 +55,7 @@ y = seq.reshape(y_train_shape[0], y_train_shape[1], y_train_shape[2])
 #print('y train:\n', y)
 predictions = model.predict(X, batch_size=X_train_shape[0], verbose=0)
 print('Train results:')
+trainOK = 0
 for seq in range(X_train_shape[0]):
     print('Maze =', seq, 'responses: ', end='')
     p = []
@@ -70,6 +71,7 @@ for seq in range(X_train_shape[0]):
         print(r, ' ', sep='', end='')
     if p == t:
         print('OK')
+        trainOK += 1
     else:
         print('Error')
 
@@ -81,6 +83,7 @@ y = seq.reshape(y_test_shape[0], y_test_shape[1], y_test_shape[2])
 #print('y test:\n', y)
 predictions = model.predict(X, batch_size=X_test_shape[0], verbose=0)
 print('Test results:')
+testOK = 0
 for seq in range(X_test_shape[0]):
     print('Maze =', seq, 'responses: ', end='')
     p = []
@@ -96,6 +99,16 @@ for seq in range(X_test_shape[0]):
         print(r, ' ', sep='', end='')
     if p == t:
         print('OK')
+        testOK += 1
     else:
         print('Error')
 
+# Print results.
+print("Train correct/total = ", trainOK, "/", X_train_shape[0], sep='', end='')
+if X_train_shape[0] > 0:
+    print(" (", ((float(trainOK) / float(X_train_shape[0])) * 100.0), "%)", sep='', end='')
+print('')
+print("Test correct/total = ", testOK, "/", X_test_shape[0], sep='', end='')
+if X_test_shape[0] > 0:
+    print(" (", ((float(testOK) / float(X_test_shape[0])) * 100.0), "%)", sep='', end='')
+print('')
