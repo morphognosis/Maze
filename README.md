@@ -73,6 +73,7 @@ learning.
 For testing, context-mazes are created from novel context and independent maze combinations
 taken from the training set. This evaluates modular context learning.
 
+<pre>
 Output dataset files:
 output_dataset_module = 'maze_dataset.py'
 Contains:
@@ -99,6 +100,7 @@ input sequences (0|1)>
 Testing output shape and sequences:
 <number of sequences>, <steps per sequence>, <output size>
 <output sequences>
+</pre>
 
 ## Requirements.
 
