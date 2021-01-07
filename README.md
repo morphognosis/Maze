@@ -117,7 +117,7 @@ Java 1.8 or later, Python 3.6.8 or later.
 
 Click on or run the maze.bat/maze.sh command in the work folder to create the mazes and bring up the dashboards.
 
-<pre>
+```
 Usage:
     java morphognosis.maze.Main
       [-batch (batch mode)]
@@ -142,7 +142,7 @@ Usage:
 Exit codes:
   0=success
   1=error
-</pre>
+```
 
 ## Other commands in work folder.
 
