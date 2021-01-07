@@ -8,9 +8,9 @@
 # 1. Maze learning: learn to navigate a sequence of rooms connected by doors.
 # 2. Context learning: learn correspondences between room configurations separated
 #    by intervening mazes.
-# 2. Modular context learning: the intervening mazes are trained independently and
+# 3. Modular context learning: the intervening mazes are trained independently and
 #    presenting only during testing. This measures the ability to dynamically combine 
-#    independtly learned sequences to achieve success.
+#    independently learned sequences to achieve success.
 #
 # A maze consists of a sequence of rooms connected by doors.
 # There are a fixed number of doors.
