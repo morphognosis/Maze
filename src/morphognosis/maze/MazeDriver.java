@@ -403,6 +403,7 @@ public class MazeDriver
    {
        if ((sensors = maze.getSensors(step)) != null)
        {
+          mouse.overrideResponse = maze.getResponse(step); 
           response = mouse.cycle(sensors);
           target = maze.getResponse(step);
           step++;
