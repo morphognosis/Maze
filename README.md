@@ -10,11 +10,143 @@ that must be retained until the end of the maze, where the same door must be cho
 the effect of modular and non-modular training is examined. In modular training, the door-associations are trained in separate trials 
 from the intervening maze paths, and only presented together in testing trials.
 
-For maze specifics, see src/morphognosis/maze/maze_maker.py
+This work is a continuation of a previous project. See references.
 
-This work is a continuation of a previous project. See references. 
+## Description.
 
-References:
+There are three learning goals:
+1. Maze learning: learn to navigate a sequence of rooms connected by doors.
+2. Context learning: learn correspondences between room configurations separated
+   by intervening mazes.
+2. Modular context learning: the intervening mazes are trained independently and
+   presenting only during testing. This measures the ability to dynamically combine
+   independtly learned sequences to achieve success.
+
+A maze consists of a sequence of rooms connected by doors.
+There are a fixed number of doors.
+The learner outputs a door choice or a wait.
+A room contains a room-specific set of on/off marks.
+
+These are the types of rooms:
+
+1. Context begin room: in this room the learner is presented with marks having a single
+   on value that corresponds to the correct door choice.
+   This door leads to either a maze entry or directly to a context end room. If it leads to
+   a maze entry room, a maze must be navigated before reaching the context end room.
+   In the context end room, the learner must choose the door that was marked on in the
+   context begin room.
+
+2. Maze entry room: the marks identify the configuration of the upcoming maze sequence,
+   consisting of maze interior rooms. The learner uses this information to navigate
+   the maze.
+
+3. Maze interior room: the marks values in this type of room are randomly generated at maze
+   creation; the marks in the maze entry room determine the correct door choice sequence
+   to move through the maze.
+
+4. Context end room: in this room the correct door choice is determined by the context begin
+   room door marks.
+
+Input format:
+<room identifier><context room marks><maze entry marks><maze interior marks><context end room marks>
+
+Room identifier format:
+context_begin_room = [1,0,0,0,0]
+maze_entry = [0,1,0,0,0]
+maze_interior = [0,0,1,0,0]
+context_end_room = [0,0,0,1,0]
+empty_room = [0,0,0,0,1]
+
+Output:
+A door choice or a wait.
+
+Training and testing.
+
+There are three types of sequences:
+1. Context: context begin room and context end room. To learn context associations.
+2. Context maze: context begin room, maze entry and interior sequence, and context end room.
+3. Independent maze: maze entry and maze interior sequence. To learn maze sequences.
+
+For training, a set of the above sequences are created. This evaluates maze and context
+learning.
+
+For testing, context-mazes are created from novel context and independent maze combinations
+taken from the training set. This evaluates modular context learning.
+
+Output dataset files:
+output_dataset_module = 'maze_dataset.py'
+Contains:
+X_train_shape = [<number of sequences>, <steps per sequence>, <input size>]
+X_train_seq = [<input sequences (0|1)>]
+y_train_shape = [<number of sequences>, <steps per sequence>, <output size>]
+y_train_seq = [<output sequences>]
+X_test_shape = [<number of sequences>, <steps per sequence>, <input size>]
+X_test_seq = [<input sequences (0|1)>]
+y_test_shape = [<number of sequences>, <steps per sequence>, <output size>]
+y_test_seq = [<output sequences>]
+
+output_dataset_csv = 'maze_dataset.csv'
+Contains:
+Training input shape and sequences:
+<number of sequences>, <steps per sequence>, <input size>
+<input sequences (0|1)>
+Training output shape and sequences:
+<number of sequences>, <steps per sequence>, <output size>
+<output sequences>]
+Testing input shape and sequences:
+<number of sequences>, <steps per sequence>, <input size>
+input sequences (0|1)>
+Testing output shape and sequences:
+<number of sequences>, <steps per sequence>, <output size>
+<output sequences>
+
+## Requirements.
+
+Java 1.8 or later, Python 3.6.8 or later.
+
+## Setup.
+
+1. Clone or download and unzip the code from https://github.com/morphognosis/Maze.
+2. Optional: Import Eclipse project.
+3. Build: click or run the build.bat/build.sh in the work folder to build the code.
+
+## Run.
+
+Click on or run the maze.bat/maze.sh command in the work folder to create the mazes and bring up the dashboards.
+
+<pre>
+Usage:
+    java morphognosis.maze.Main
+      [-batch (batch mode)]
+      [-responseDriver <metamorphDB | metamorphNN> (response driver, default=metamorphDB)]
+      [-randomSeed <random number seed> (default=4517)]
+      [-writeMetamorphDataset [<file name>] (default=metamorphs.csv)]
+      Maze maker parameters:
+        [-numRoomMarks <quantity> (default=5)]
+        [-numDoors <quantity> (default=3)]
+        [-mazeInteriorSequenceLength <length> (default=5)]
+        [-numContextMazes <quantity> (default=5)]
+        [-numIndependentMazes <quantity> (default=5)]
+      Metamorph Weka neural network parameters:
+        [-NNlearningRate <quantity> (default=0.1)]
+        [-NNmomentum <quantity> (default=0.2)]
+        [-NNhiddenLayers <quantity> (default="50")]
+        [-NNtrainingTime <quantity> (default=5000)]
+  Print parameters:
+    java morphognosis.maze.Main -printParameters
+  Version:
+    java morphognosis.maze.Main -version
+Exit codes:
+  0=success
+  1=error
+</pre>
+
+## Other commands in work folder.
+
+1. maze_maker.py/.bat/.sh: Make the mazes.
+2. maze_rnn.py/.bat/.sh: Train and test using LSTM NN (requires numpy and keras Python packages).
+
+## References
 
 T. E. Portegys, "A Maze Learning Comparison of Elman, Long Short-Term Memory, and Mona Neural Networks", Neural Networks, 2010.
 http://tom.portegys.com/research.html#maze

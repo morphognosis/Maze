@@ -11,6 +11,13 @@ import morphognosis.Utility;
 
 public class Parameters
 {
+	// Maze parameters.
+    public static int NUM_ROOM_MARKS = 5;
+    public static int NUM_DOORS = 3;
+	public static int MAZE_INTERIOR_SEQUENCE_LENGTH = 5;
+	public static int NUM_CONTEXT_MAZES = 5;
+	public static int NUM_INDEPENDENT_MAZES = 5;
+
    // Morphognosis parameters.
    public static int     NUM_NEIGHBORHOODS       = 6;
    public static int[][] NEIGHBORHOOD_DIMENSIONS = { { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 } };
@@ -25,6 +32,11 @@ public class Parameters
    // Save.
    public static void save(DataOutputStream writer) throws IOException
    {
+	  Utility.saveInt(writer, NUM_ROOM_MARKS);
+	  Utility.saveInt(writer, NUM_DOORS);
+	  Utility.saveInt(writer, MAZE_INTERIOR_SEQUENCE_LENGTH);
+	  Utility.saveInt(writer, NUM_CONTEXT_MAZES);
+	  Utility.saveInt(writer, NUM_INDEPENDENT_MAZES);	 
       Utility.saveInt(writer, NUM_NEIGHBORHOODS);
       for (int i = 0; i < NUM_NEIGHBORHOODS; i++)
       {
@@ -46,6 +58,11 @@ public class Parameters
    // Load.
    public static void load(DataInputStream reader) throws IOException
    {
+	  NUM_ROOM_MARKS = Utility.loadInt(reader);
+	  NUM_DOORS       = Utility.loadInt(reader);
+	  MAZE_INTERIOR_SEQUENCE_LENGTH       = Utility.loadInt(reader);
+	  NUM_CONTEXT_MAZES       = Utility.loadInt(reader);
+	  NUM_INDEPENDENT_MAZES       = Utility.loadInt(reader); 
       NUM_NEIGHBORHOODS       = Utility.loadInt(reader);
       NEIGHBORHOOD_DIMENSIONS = new int[NUM_NEIGHBORHOODS][2];
       for (int i = 0; i < NUM_NEIGHBORHOODS; i++)
@@ -68,6 +85,11 @@ public class Parameters
    // Print.
    public static void print()
    {
+	  System.out.println("NUM_ROOM_MARKS = " + NUM_ROOM_MARKS);
+	  System.out.println("NUM_DOORS = " + NUM_DOORS);
+	  System.out.println("MAZE_INTERIOR_SEQUENCE_LENGTH = " + MAZE_INTERIOR_SEQUENCE_LENGTH);
+	  System.out.println("NUM_CONTEXT_MAZES = " + NUM_CONTEXT_MAZES);
+	  System.out.println("NUM_INDEPENDENT_MAZES = " + NUM_INDEPENDENT_MAZES);	   
       System.out.println("NUM_NEIGHBORHOODS = " + NUM_NEIGHBORHOODS);
       System.out.print("NEIGHBORHOOD_DIMENSIONS (element: { <neighborhood dimension>, <sector dimension> })={");
       for (int i = 0; i < NUM_NEIGHBORHOODS; i++)

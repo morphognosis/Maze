@@ -256,7 +256,6 @@ public class MazeDashboard extends JFrame
       // Speed slider listener.
       public void stateChanged(ChangeEvent evt)
       {
-         setMessage(null);
          setStepDelay(speedSlider.getValue());
       }
 
@@ -264,8 +263,6 @@ public class MazeDashboard extends JFrame
       // Button listener.
       public void actionPerformed(ActionEvent evt)
       {
-         setMessage(null);
-
          // Step?
          if (evt.getSource() == (Object)stepButton)
          {
