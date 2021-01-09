@@ -27,6 +27,7 @@
 package morphognosis.maze;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.UIManager;
 import morphognosis.Morphognosis;
@@ -112,30 +113,63 @@ public class Main
 	      mazeDriver.initTrainMaze(i, responseDriver);
 	      mazeDashboard.log("Maze = " + i);
 	      boolean ok = true;
+	      ArrayList<Integer> responses = new ArrayList<Integer>();
+	      ArrayList<Integer> targets = new ArrayList<Integer>();
+	      String s = "";
 	         while (mazeDashboard.update() && mazeDriver.stepMaze()) 
 	         {
+	        	 responses.add(mazeDriver.response);
+	        	 targets.add(mazeDriver.target);
+	        	 s = "Maze = " + i + " responses: ";
+	        	 for (int r : responses)
+	        	 {
+	        		 s += r + " ";
+	        	 }
+	        	 s += "targets: ";
+	        	 for (int r : targets)
+	        	 {
+	        		 s += r + " ";
+	        	 }
+	        	 mazeDashboard.logLast(s);
 	        	 if (mazeDriver.response != mazeDriver.target)
 	        		 {
 	        		  ok = false;
 	        		 }
-	         }
+	         }	         
 	         if (ok)
 	         {
 	        	 trainOK++;
-	        	 mazeDashboard.log("OK");
+	        	 mazeDashboard.logLast(s + " OK");
 	         } else {
-	        	 mazeDashboard.log("Error");
+	        	 mazeDashboard.logLast(s + " Error");
 	         }
       }
       
       // Test mazes.
-      mazeDashboard.log("Test results:");      
+      mazeDashboard.log("Test results:"); 
       for (int i = 0, j = mazeDriver.testMazes.size(); i < j; i++)
       {
 	      mazeDriver.initTestMaze(i, responseDriver);
+	      mazeDashboard.log("Maze = " + i);	      
 	      boolean ok = true;
+	      ArrayList<Integer> responses = new ArrayList<Integer>();
+	      ArrayList<Integer> targets = new ArrayList<Integer>();
+	      String s = "";
 	         while (mazeDashboard.update() && mazeDriver.stepMaze())
 	         {
+	        	 responses.add(mazeDriver.response);
+	        	 targets.add(mazeDriver.target);
+	        	 s = "Maze = " + i + " responses: ";
+	        	 for (int r : responses)
+	        	 {
+	        		 s += r + " ";
+	        	 }
+	        	 s += "targets: ";
+	        	 for (int r : targets)
+	        	 {
+	        		 s += r + " ";
+	        	 }
+	        	 mazeDashboard.logLast(s);
 	        	 if (mazeDriver.response != mazeDriver.target)
 	        		 {
 	        		  ok = false;
@@ -144,9 +178,9 @@ public class Main
 	         if (ok)
 	         {
 	        	 testOK++;
-	        	 mazeDashboard.log("OK");
+	        	 mazeDashboard.logLast(s + " OK");
 	         } else {
-	        	 mazeDashboard.log("Error");
+	        	 mazeDashboard.logLast(s + " Error");
 	         }
       }
       

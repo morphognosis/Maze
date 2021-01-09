@@ -5,16 +5,12 @@
 package morphognosis.maze;
 
 import java.awt.BorderLayout;
-import java.awt.Canvas;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Label;
+import java.awt.TextArea;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JButton;
@@ -32,14 +28,8 @@ public class MazeDashboard extends JFrame
    // Maze driver.
    public MazeDriver mazeDriver;
 
-   // Dimensions.
-   public static final Dimension DISPLAY_SIZE = new Dimension(550, 750);
-
-   // Display.
-   public Display display;
-   
-   // Mouse dashboard.
-   public MouseDashboard mouseDashboard;
+   // Run log.
+   public TextArea log;
 
    // Speed control.
    public SpeedControl speedControl;
@@ -48,6 +38,9 @@ public class MazeDashboard extends JFrame
    public static final int MIN_STEP_DELAY = 0;
    public static final int MAX_STEP_DELAY = 150;
    public int              stepDelay      = MAX_STEP_DELAY;
+   
+   // Mouse dashboard.
+   public MouseDashboard mouseDashboard;
 
    // Quit.
    public boolean quit;
@@ -60,7 +53,7 @@ public class MazeDashboard extends JFrame
       // Create mouse dashboard.
       mouseDashboard = new MouseDashboard(mazeDriver.mouse);
 
-      // Set up display.
+      // Set up window.
       setTitle("Maze");
       quit = false;
       addWindowListener(new WindowAdapter()
@@ -71,21 +64,19 @@ public class MazeDashboard extends JFrame
                            }
                         }
                         );
-      setBounds(0, 0, DISPLAY_SIZE.width, DISPLAY_SIZE.height);
       JPanel basePanel = (JPanel)getContentPane();
       basePanel.setLayout(new BorderLayout());
 
-      // Create display.
-      Dimension displaySize = new Dimension(DISPLAY_SIZE.width,
-                                            (int)((double)DISPLAY_SIZE.height * .7));
-      display = new Display(displaySize);
-      basePanel.add(display, BorderLayout.NORTH);
+      // Create log.
+     log = new TextArea("", 20, 80, TextArea.SCROLLBARS_BOTH);
+     log.setEditable(false);
+      basePanel.add(log, BorderLayout.NORTH);
 
       // Create speed control.
       speedControl = new SpeedControl();
       basePanel.add(speedControl, BorderLayout.SOUTH);
 
-      // Make display visible.
+      // Make dashboard visible.
       pack();
       setLocation();
       setVisible(true);
@@ -106,10 +97,7 @@ public class MazeDashboard extends JFrame
 
    private int timer = 0;
    public boolean update()
-   {
-      // Update display.
-      display.update();
-      
+   {    
       // Update mouse dashboard.
       mouseDashboard.update();
 
@@ -150,69 +138,22 @@ public class MazeDashboard extends JFrame
 
 
    // Log.
-   public void log(String message)
+   public void log(String event)
    {
-      display.messageText = message;
+	   log.append(event + "\n");
    }
-
-
-   // Display.
-   public class Display extends Canvas
+   
+   // Overwrite last log line. 
+   public void logLast(String event)
    {
-      private static final long serialVersionUID = 0L;
-
-      // Font.
-      public Font font;
-
-      // Message.
-      public String messageText;
-
-      // Sizes.
-      Dimension canvasSize;
-      int       width, height;
-      float     cellWidth, cellHeight;
-
-      // Constructor.
-      public Display(Dimension canvasSize)
-      {
-         // Configure canvas.
-         this.canvasSize = canvasSize;
-         setBounds(0, 0, canvasSize.width, canvasSize.height);
-         addMouseListener(new CanvasMouseListener());
-         addMouseMotionListener(new CanvasMouseMotionListener());
-      }
-
-
-      // Update display.
-      void update()
-      {
-      }
-
-
-      // Initialize graphics.
-      void initGraphics()
-      {
-      }
-
-      // Canvas mouse listener.
-      class CanvasMouseListener extends MouseAdapter
-      {
-         // Mouse pressed.
-         public void mousePressed(MouseEvent evt)
-         {
-         }
-      }
-   }
-
-   // Canvas mouse motion listener.
-   class CanvasMouseMotionListener extends MouseMotionAdapter
-   {
-      // Mouse dragged.
-      public void mouseDragged(MouseEvent evt)
-      {
-      }
-   }
-
+       String [] lines = log.getText().split("\n");
+       if (lines.length > 0)
+       {
+	       lines[lines.length -1] = event + "\n";
+	       log.setText(String.join("\n", lines));
+       }
+   }   
+   
    // Speed control panel.
    class SpeedControl extends JPanel implements ActionListener, ChangeListener
    {

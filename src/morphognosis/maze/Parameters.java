@@ -12,11 +12,11 @@ import morphognosis.Utility;
 public class Parameters
 {
 	// Maze parameters.
-    public static int NUM_ROOM_MARKS = 5;
+    public static int NUM_ROOM_MARKS = 3;
     public static int NUM_DOORS = 3;
-	public static int MAZE_INTERIOR_SEQUENCE_LENGTH = 5;
-	public static int NUM_CONTEXT_MAZES = 5;
-	public static int NUM_INDEPENDENT_MAZES = 5;
+	public static int MAZE_INTERIOR_SEQUENCE_LENGTH = 1;
+	public static int NUM_CONTEXT_MAZES = 1;
+	public static int NUM_INDEPENDENT_MAZES = 2;
 
    // Morphognosis parameters.
    public static int     NUM_NEIGHBORHOODS       = 6;

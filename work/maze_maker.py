@@ -9,7 +9,7 @@
 # 2. Context learning: learn correspondences between room configurations separated
 #    by intervening mazes.
 # 3. Modular context learning: the intervening mazes are trained independently and
-#    presenting only during testing. This measures the ability to dynamically combine 
+#    presenting only during testing. This measures the ability to dynamically combine
 #    independently learned sequences to achieve success.
 #
 # A maze consists of a sequence of rooms connected by doors.
@@ -29,16 +29,15 @@
 # 2. Maze entry room: the marks identify the configuration of the upcoming maze sequence,
 #    consisting of maze interior rooms. The learner uses this information to navigate
 #    the maze.
-#    
-# 3. Maze interior room: the marks values in this type of room are randomly generated at maze 
-#    creation; the marks in the maze entry room determine the correct door choice sequence 
-#    to move through the maze.
+#
+# 3. Maze interior room: the marks in the maze entry room determine the correct door choice 
+#    sequence to move through the maze.
 #
 # 4. Context end room: in this room the correct door choice is determined by the context begin
 #    room door marks.
 #
 # Input format:
-# <room identifier><context room marks><maze entry marks><maze interior marks><context end room marks>
+# <room identifier><context room marks><maze entry marks><context end room marks>
 #
 # Room identifier format:
 context_begin_room = [1,0,0,0,0]
@@ -93,11 +92,11 @@ from numpy import array
 import sys, getopt, random
 
 # Default parameters.
-num_room_marks = 5
+num_room_marks = 3
 num_doors = 3
-maze_interior_sequence_length = 5
-num_context_mazes = 5
-num_independent_mazes = 5
+maze_interior_sequence_length = 1
+num_context_mazes = 3
+num_independent_mazes = 3
 random_seed = 4517
 verbose = True
 
@@ -168,24 +167,31 @@ off_room_marks = []
 for i in range(num_room_marks):
     off_room_marks += [0]
 
-# Generate a maze from marks.
-def gen_maze():
+# Generated room marks.
+generated_room_marks = []
 
-    # Generate marks.
-    def gen_marks():
-        marks = []
-        while True:
+# Generate a maze.
+def generate_maze():
+
+    # Generate unique room marks.
+    def generate_unique_room_marks():
+        global generated_room_marks
+        for c in range(100):
             marks = []
             for i in range(num_room_marks):
                 marks.append(random.randint(0, 1))
-            if 1 in marks:
+            if 1 in marks and marks not in generated_room_marks:
+                generated_room_marks.append(marks)
                 break
+        if c >= 100:
+            print("Cannot generate unique room marks")
+            sys.exit(1)
         return marks
 
     X_seq = []
     y_seq = []
     X_seq += maze_entry
-    X_seq += (off_doors + gen_marks() + off_room_marks + off_doors)
+    X_seq += (off_doors + generate_unique_room_marks() + off_doors)
     door = random.randrange(0, num_doors)
     for i in range(num_doors + 1):
         if i == door:
@@ -194,7 +200,7 @@ def gen_maze():
             y_seq += [0]
     for room in range(maze_interior_sequence_length):
         X_seq += maze_interior
-        X_seq += (off_doors + off_room_marks + gen_marks() + off_doors)
+        X_seq += (off_doors + off_room_marks + off_doors)
         door = random.randrange(0, num_doors)
         for i in range(num_doors + 1):
             if i == door:
@@ -211,7 +217,7 @@ num_context_sequences = num_doors
 num_context_maze_sequences = num_doors * num_context_mazes
 num_independent_maze_sequences = num_independent_mazes
 num_train_sequences = num_context_sequences + num_context_maze_sequences + num_independent_maze_sequences
-num_inputs = 5 + num_doors + num_room_marks + num_room_marks + num_doors
+num_inputs = 5 + num_doors + num_room_marks + num_doors
 num_outputs = num_doors + 1
 X_train_shape = [num_train_sequences, sequence_steps, num_inputs]
 X_train_seq = []
@@ -231,9 +237,9 @@ for door in range(num_context_sequences):
             y_train_seq += [1]
         else:
             y_train_seq += [0]
-    X_train_seq += (off_room_marks + off_room_marks + off_doors)
+    X_train_seq += (off_room_marks + off_doors)
     X_train_seq += context_end_room
-    X_train_seq += (off_doors + off_room_marks + off_room_marks)
+    X_train_seq += (off_doors + off_room_marks)
     for i in range(num_doors):
         X_train_seq += [1]
     for i in range(num_doors + 1):
@@ -243,7 +249,7 @@ for door in range(num_context_sequences):
             y_train_seq += [0]
     for i in range(sequence_steps - 2):
         X_train_seq += empty_room
-        X_train_seq += (off_doors + off_room_marks + off_room_marks + off_doors)
+        X_train_seq += (off_doors + off_room_marks + off_doors)
         for i in range(num_doors):
             y_train_seq += [0]
         y_train_seq += [1]
@@ -255,11 +261,10 @@ X_maze_context_seqs = []
 y_maze_context_seqs = []
 n = 0
 while n < num_context_mazes:
-    X, y = gen_maze()
-    if X not in X_maze_context_seqs:
-        X_maze_context_seqs.append(X)
-        y_maze_context_seqs.append(y)
-        n += 1
+    X, y = generate_maze()
+    X_maze_context_seqs.append(X)
+    y_maze_context_seqs.append(y)
+    n += 1
 
 # Combine contexts with mazes.
 for door in range(num_context_sequences):
@@ -275,11 +280,11 @@ for door in range(num_context_sequences):
                 y_train_seq += [1]
             else:
                 y_train_seq += [0]
-        X_train_seq += (off_room_marks + off_room_marks + off_doors)
+        X_train_seq += (off_room_marks + off_doors)
         X_train_seq += X_maze_context_seqs[maze]
         y_train_seq += y_maze_context_seqs[maze]
         X_train_seq += context_end_room
-        X_train_seq += (off_doors + off_room_marks + off_room_marks)
+        X_train_seq += (off_doors + off_room_marks)
         for i in range(num_doors):
             X_train_seq += [1]
         for i in range(num_doors + 1):
@@ -293,18 +298,17 @@ X_maze_independent_seqs = []
 y_maze_independent_seqs = []
 n = 0
 while n < num_independent_mazes:
-    X, y = gen_maze()
-    if X not in X_maze_independent_seqs and X not in X_maze_context_seqs:
-        X_maze_independent_seqs.append(X)
-        y_maze_independent_seqs.append(y)
-        n += 1
+    X, y = generate_maze()
+    X_maze_independent_seqs.append(X)
+    y_maze_independent_seqs.append(y)
+    n += 1
 
 for maze in range(num_independent_mazes):
     X_train_seq += X_maze_independent_seqs[maze]
     y_train_seq += y_maze_independent_seqs[maze]
     for i in range(2):
         X_train_seq += empty_room
-        X_train_seq += (off_doors + off_room_marks + off_room_marks + off_doors)
+        X_train_seq += (off_doors + off_room_marks + off_doors)
         for i in range(num_doors):
             y_train_seq += [0]
         y_train_seq += [1]
@@ -327,7 +331,7 @@ for door in range(num_context_sequences):
                 X_test_seq += [1]
             else:
                 X_test_seq += [0]
-        X_test_seq += (off_room_marks + off_room_marks + off_doors)
+        X_test_seq += (off_room_marks + off_doors)
         for i in range(num_doors + 1):
             if i == door:
                 y_test_seq += [1]
@@ -336,7 +340,7 @@ for door in range(num_context_sequences):
         X_test_seq += X_maze_independent_seqs[maze]
         y_test_seq += y_maze_independent_seqs[maze]
         X_test_seq += context_end_room
-        X_test_seq += (off_doors + off_room_marks + off_room_marks)
+        X_test_seq += (off_doors + off_room_marks)
         for i in range(num_doors):
             X_test_seq += [1]
         for i in range(num_doors + 1):
@@ -480,8 +484,7 @@ if verbose:
                 print(' (empty_room)        ', end='')
             print(' marks =', marks[0:num_doors], end='')
             print('', marks[num_doors:num_doors + num_room_marks], end='')
-            print('', marks[num_doors + num_room_marks:num_doors + (num_room_marks * 2)], end='')
-            print('', marks[num_doors + (num_room_marks * 2):num_doors + (num_room_marks * 2) + num_doors], end='')
+            print('', marks[num_doors + num_room_marks:num_doors + num_room_marks + num_doors], end='')
             print(' }', end='')
             output = y[seq][step]
             print(' output =', output, end='')
@@ -516,8 +519,7 @@ if verbose:
                 print(' (empty_room)        ', end='')
             print(' marks =', marks[0:num_doors], end='')
             print('', marks[num_doors:num_doors + num_room_marks], end='')
-            print('', marks[num_doors + num_room_marks:num_doors + (num_room_marks * 2)], end='')
-            print('', marks[num_doors + (num_room_marks * 2):num_doors + (num_room_marks * 2) + num_doors], end='')
+            print('', marks[num_doors + num_room_marks:num_doors + num_room_marks + num_doors], end='')
             print(' }', end='')
             output = y[seq][step]
             print(' output =', output, end='')

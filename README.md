@@ -40,8 +40,7 @@ These are the types of rooms:
    consisting of maze interior rooms. The learner uses this information to navigate
    the maze.
 
-3. Maze interior room: the marks values in this type of room are randomly generated at maze
-   creation; the marks in the maze entry room determine the correct door choice sequence
+3. Maze interior room: in the maze entry room determine the correct door choice sequence
    to move through the maze.
 
 4. Context end room: in this room the correct door choice is determined by the context begin
@@ -50,7 +49,7 @@ These are the types of rooms:
 Input format:
 
 ```
-<room identifier><context room marks><maze entry marks><maze interior marks><context end room marks>
+<room identifier><context room marks><maze entry marks><context end room marks>
 
 Room identifier format:
 context_begin_room = [1,0,0,0,0]
