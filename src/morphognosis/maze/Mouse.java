@@ -237,28 +237,39 @@ public class Mouse
 
 
    // Get metamorph DB response.
-   public void metamorphDBresponse()
+   public float metamorphDBresponse()
    {
       Metamorph metamorph = null;
-      float     d         = 0.0f;
+      float     dist         = 0.0f;
       float     d2;
+      int duplicates = 0;
 
       for (Metamorph m : metamorphs)
       {
          d2 = morphognostic.compare(m.morphognostic);
-         if ((metamorph == null) || (d2 < d))
+         if ((metamorph == null) || (d2 < dist))
          {
-            d         = d2;
+            dist         = d2;
             metamorph = m;
+            duplicates = 1;
          }
          else
          {
-            if (d2 == d)
+            if (d2 == dist)
             {
-               if (random.nextBoolean())
+               if (m.morphognostic.compare(metamorph.morphognostic) == 0.0f)
                {
-                  d         = d2;
-                  metamorph = m;
+            	   duplicates++;
+	               if (random.nextBoolean())
+	               {
+	                  metamorph = m;
+	               }
+               } else {
+	               if (random.nextBoolean())
+	               {
+	                  metamorph = m;
+	                  duplicates = 1;
+	               }            	   
                }
             }
          }
@@ -266,10 +277,12 @@ public class Mouse
       if (metamorph != null)
       {
          response = metamorph.response;
+         return dist * (float)duplicates;
       }
       else
       {
          response = -1;
+         return -1.0f;
       }
    }
 
@@ -343,7 +356,8 @@ public class Mouse
       for (int i = 0, j = metamorphs.size(); i < j; i++)
       {
          Metamorph m = metamorphs.get(i);
-         if (m.morphognostic.compare(metamorph.morphognostic) <= EQUIVALENT_MORPHOGNOSTIC_DISTANCE)
+         if (m.morphognostic.compare(metamorph.morphognostic) <= EQUIVALENT_MORPHOGNOSTIC_DISTANCE &&
+        		 m.response == metamorph.response)
          {
             foundIdx = i;
             break;

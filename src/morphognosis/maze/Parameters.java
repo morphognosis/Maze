@@ -15,13 +15,15 @@ public class Parameters
     public static int NUM_ROOM_MARKS = 3;
     public static int NUM_DOORS = 3;
 	public static int MAZE_INTERIOR_SEQUENCE_LENGTH = 1;
-	public static int NUM_CONTEXT_MAZES = 1;
-	public static int NUM_INDEPENDENT_MAZES = 2;
+	public static int NUM_CONTEXT_MAZES = 5;
+	public static int NUM_INDEPENDENT_MAZES = 1;
 
    // Morphognosis parameters.
-   public static int     NUM_NEIGHBORHOODS       = 6;
-   public static int[][] NEIGHBORHOOD_DIMENSIONS = { { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 } };
-   public static int[]   NEIGHBORHOOD_DURATIONS  = { 1, 1, 1, 1, 1, 10 };
+   public static int     NUM_NEIGHBORHOODS       = 10;
+   public static int[][] NEIGHBORHOOD_DIMENSIONS = 
+	   { { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, 
+		 { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 } };
+   public static int[]   NEIGHBORHOOD_DURATIONS  = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
    // Metamorph neural network parameters.
    public static double NN_LEARNING_RATE = 0.1;
