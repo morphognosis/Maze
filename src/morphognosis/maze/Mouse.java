@@ -42,7 +42,7 @@ public class Mouse
    // Response driver.
    public int responseDriver;
 
-   // Morphognostic.
+   // Morphognostics.
    public Morphognostic morphognostic;
 
    // Metamorphs.
@@ -242,42 +242,31 @@ public class Mouse
       Metamorph metamorph = null;
       float     dist         = 0.0f;
       float     d2;
-      int duplicates = 0;
 
       for (Metamorph m : metamorphs)
       {
+    	 if (m.ambiguous)continue; 
          d2 = morphognostic.compare(m.morphognostic);
          if ((metamorph == null) || (d2 < dist))
          {
             dist         = d2;
             metamorph = m;
-            duplicates = 1;
          }
          else
          {
             if (d2 == dist)
             {
-               if (m.morphognostic.compare(metamorph.morphognostic) == 0.0f)
-               {
-            	   duplicates++;
 	               if (random.nextBoolean())
 	               {
 	                  metamorph = m;
-	               }
-               } else {
-	               if (random.nextBoolean())
-	               {
-	                  metamorph = m;
-	                  duplicates = 1;
 	               }            	   
-               }
             }
          }
       }
       if (metamorph != null)
       {
          response = metamorph.response;
-         return dist * (float)duplicates;
+         return dist;
       }
       else
       {
@@ -356,10 +345,14 @@ public class Mouse
       for (int i = 0, j = metamorphs.size(); i < j; i++)
       {
          Metamorph m = metamorphs.get(i);
-         if (m.morphognostic.compare(metamorph.morphognostic) <= EQUIVALENT_MORPHOGNOSTIC_DISTANCE &&
-        		 m.response == metamorph.response)
+         if (m.morphognostic.compare(metamorph.morphognostic) <= EQUIVALENT_MORPHOGNOSTIC_DISTANCE)
          {
-            foundIdx = i;
+        	if (m.response == metamorph.response) 
+        	{
+        		foundIdx = i;
+        	} else {
+        		metamorph.ambiguous = true;
+        	}
             break;
          }
       }

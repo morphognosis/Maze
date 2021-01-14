@@ -127,7 +127,6 @@ Usage:
       [-randomSeed <random number seed> (default=4517)]
       [-writeMetamorphDataset [<file name>] (default=metamorphs.csv)]
       Maze maker parameters:
-        [-numRoomMarks <quantity> (default=5)]
         [-numDoors <quantity> (default=3)]
         [-mazeInteriorSequenceLength <length> (default=5)]
         [-numContextMazes <quantity> (default=5)]

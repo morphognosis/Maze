@@ -18,7 +18,6 @@ public class MazeMaker
    public static final String Usage =
       "Usage:\n" +
       "    java morphognosis.maze.MazeRNN\n" +
-      "     [-numRoomMarks <quantity> (default=" + Parameters.NUM_ROOM_MARKS + ")]\n" +
       "     [-numDoors <quantity> (default=" + Parameters.NUM_DOORS + ")]\n" +
 	  "     [-mazeInteriorSequenceLength <length> (default=" + Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH + ")]\n" +
 	  "     [-numContextMazes <quantity> (default=" + Parameters.NUM_CONTEXT_MAZES + ")]\n" +
@@ -52,7 +51,6 @@ public class MazeMaker
          System.exit(1);
       }
       ProcessBuilder processBuilder = new ProcessBuilder("python", "maze_maker.py",
-                                                         "--num_room_marks", (Parameters.NUM_ROOM_MARKS + ""), 
                                                          "--num_doors", (Parameters.NUM_DOORS + ""),
                                                          "--maze_interior_sequence_length", (Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH + ""),
                                                          "--num_context_mazes", (Parameters.NUM_CONTEXT_MAZES + ""),
@@ -72,32 +70,6 @@ public class MazeMaker
    {
       for (int i = 0; i < args.length; i++)
       {
-          if (args[i].equals("-numRoomMarks"))
-          {
-             i++;
-             if (i >= args.length)
-             {
-                System.err.println("Invalid numRoomMarks option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             try
-             {
-                Parameters.NUM_ROOM_MARKS = Integer.parseInt(args[i]);
-             }
-             catch (NumberFormatException e) {
-                System.err.println("Invalid numRoomMarks option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             if (Parameters.NUM_ROOM_MARKS < 0)
-             {
-                System.err.println("Invalid numRoomMarks option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             continue;
-          }
           if (args[i].equals("-numDoors"))
           {
              i++;

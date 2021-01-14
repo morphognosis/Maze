@@ -12,11 +12,10 @@ import morphognosis.Utility;
 public class Parameters
 {
 	// Maze parameters.
-    public static int NUM_ROOM_MARKS = 3;
     public static int NUM_DOORS = 3;
-	public static int MAZE_INTERIOR_SEQUENCE_LENGTH = 1;
+	public static int MAZE_INTERIOR_SEQUENCE_LENGTH = 4;
 	public static int NUM_CONTEXT_MAZES = 5;
-	public static int NUM_INDEPENDENT_MAZES = 1;
+	public static int NUM_INDEPENDENT_MAZES = 2;
 
    // Morphognosis parameters.
    public static int     NUM_NEIGHBORHOODS       = 10;
@@ -34,7 +33,6 @@ public class Parameters
    // Save.
    public static void save(DataOutputStream writer) throws IOException
    {
-	  Utility.saveInt(writer, NUM_ROOM_MARKS);
 	  Utility.saveInt(writer, NUM_DOORS);
 	  Utility.saveInt(writer, MAZE_INTERIOR_SEQUENCE_LENGTH);
 	  Utility.saveInt(writer, NUM_CONTEXT_MAZES);
@@ -60,7 +58,6 @@ public class Parameters
    // Load.
    public static void load(DataInputStream reader) throws IOException
    {
-	  NUM_ROOM_MARKS = Utility.loadInt(reader);
 	  NUM_DOORS       = Utility.loadInt(reader);
 	  MAZE_INTERIOR_SEQUENCE_LENGTH       = Utility.loadInt(reader);
 	  NUM_CONTEXT_MAZES       = Utility.loadInt(reader);
@@ -87,7 +84,6 @@ public class Parameters
    // Print.
    public static void print()
    {
-	  System.out.println("NUM_ROOM_MARKS = " + NUM_ROOM_MARKS);
 	  System.out.println("NUM_DOORS = " + NUM_DOORS);
 	  System.out.println("MAZE_INTERIOR_SEQUENCE_LENGTH = " + MAZE_INTERIOR_SEQUENCE_LENGTH);
 	  System.out.println("NUM_CONTEXT_MAZES = " + NUM_CONTEXT_MAZES);

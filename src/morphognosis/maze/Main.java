@@ -48,8 +48,7 @@ public class Main
       "      [-responseDriver <metamorphDB | metamorphNN> (response driver, default=metamorphDB)]\n" +
       "      [-randomSeed <random number seed> (default=" + DEFAULT_RANDOM_SEED + ")]\n" +
       "      [-writeMetamorphDataset [<file name>] (default=" + Mouse.METAMORPH_DATASET_FILE_NAME + ")]\n" +
-      "      Maze maker parameters:\n" +      
-      "        [-numRoomMarks <quantity> (default=" + Parameters.NUM_ROOM_MARKS + ")]\n" +      
+      "      Maze maker parameters:\n" +            
       "        [-numDoors <quantity> (default=" + Parameters.NUM_DOORS + ")]\n" +
 	  "        [-mazeInteriorSequenceLength <length> (default=" + Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH + ")]\n" +
 	  "        [-numContextMazes <quantity> (default=" + Parameters.NUM_CONTEXT_MAZES + ")]\n" +
@@ -243,32 +242,6 @@ public class Main
             else
             {
                System.err.println("Invalid responseDriver option");
-               System.err.println(Usage);
-               System.exit(1);
-            }
-            continue;
-         }
-         if (args[i].equals("-numRoomMarks"))
-         {
-            i++;
-            if (i >= args.length)
-            {
-               System.err.println("Invalid numRoomMarks option");
-               System.err.println(Usage);
-               System.exit(1);
-            }
-            try
-            {
-               Parameters.NUM_ROOM_MARKS = Integer.parseInt(args[i]);
-            }
-            catch (NumberFormatException e) {
-               System.err.println("Invalid numRoomMarks option");
-               System.err.println(Usage);
-               System.exit(1);
-            }
-            if (Parameters.NUM_ROOM_MARKS < 0)
-            {
-               System.err.println("Invalid numRoomMarks option");
                System.err.println(Usage);
                System.exit(1);
             }
