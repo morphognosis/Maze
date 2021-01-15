@@ -76,10 +76,10 @@ public class MetamorphNN
       Instances metamorphInstances = new Instances("metamorphs", attributeNames, 0);
       for (Metamorph metamorph : metamorphs)
       {
-    	 if (!metamorph.ambiguous)
-    	 {
-         metamorphInstances.add(createInstance(metamorph.morphognostic, metamorph.response));
-    	 }
+         if (!metamorph.ambiguous)
+         {
+            metamorphInstances.add(createInstance(metamorph.morphognostic, metamorph.response));
+         }
       }
       metamorphInstances.setClassIndex(numAttributes - 1);
 
@@ -164,7 +164,6 @@ public class MetamorphNN
          {
             for (int y = 0; y < n; y++)
             {
-               Morphognostic.Neighborhood.Sector s = neighborhood.sectors[x][y];
                for (int d = 0; d < morphognostic.eventDimensions; d++)
                {
                   if (neighborhood.eventDimensionMap[d])
@@ -231,6 +230,28 @@ public class MetamorphNN
          c += probabilities[response];
       }
       return(Mouse.WAIT_RESPONSE);
+   }
+
+
+   // Get response probabilities.
+   public double[] responseProbabilities(Morphognostic morphognostic)
+   {
+      if (mlp == null)
+      {
+         System.err.println("Warning: cannot get metamorph neural network response: model is null");
+         return(null);
+      }
+      Instance morphognosticInstance = createInstance(morphognostic, 0);
+      try
+      {
+         return(mlp.distributionForInstance(morphognosticInstance));
+      }
+      catch (Exception e)
+      {
+         System.err.println("Cannot get response from neural network: " + e.getMessage());
+         e.printStackTrace();
+         return(null);
+      }
    }
 
 

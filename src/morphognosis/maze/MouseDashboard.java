@@ -25,41 +25,42 @@ public class MouseDashboard extends JFrame
    private static final long serialVersionUID = 0L;
 
    // Components.
-   public StatePanel          statePanel;
+   public StatePanel           statePanel;
    public MorphognosticDisplay morphognosticPanel;
 
    // Mouse.
    public Mouse mouse;
-   
+
    // Quit.
    public boolean quit;
-   
+
    // Constructor.
    public MouseDashboard(Mouse mouse)
    {
-      this.mouse          = mouse;
+      this.mouse = mouse;
 
       setTitle("Mouse");
       quit = false;
       addWindowListener(new WindowAdapter()
-		      {
-		         public void windowClosing(WindowEvent e)
-		         {
-		            quit = true;
-		         }
-		      }
-      );
+                        {
+                           public void windowClosing(WindowEvent e)
+                           {
+                              quit = true;
+                           }
+                        }
+                        );
       JPanel basePanel = (JPanel)getContentPane();
       basePanel.setLayout(new BoxLayout(basePanel, BoxLayout.Y_AXIS));
       statePanel = new StatePanel();
       basePanel.add(statePanel);
-      morphognosticPanel = new MorphognosticDisplay(mouse.morphognostic);
+      morphognosticPanel = new MorphognosticDisplay(mouse.morphognostics[mouse.morphognostics.length - 1]);
       basePanel.add(morphognosticPanel);
       pack();
       setLocation();
       setVisible(true);
       update();
    }
+
 
    // Set dashboard location.
    public void setLocation()
@@ -77,14 +78,17 @@ public class MouseDashboard extends JFrame
    // Update dashboard.
    public boolean update()
    {
-	  if (!quit) 
-	  { 	   
-	      statePanel.update();
-	      return true;
-	  } else {
-		  return false;
-	  }
+      if (!quit)
+      {
+         statePanel.update();
+         return(true);
+      }
+      else
+      {
+         return(false);
+      }
    }
+
 
    // Status panel.
    public class StatePanel extends JPanel
@@ -95,7 +99,7 @@ public class MouseDashboard extends JFrame
       public JTextField sensorsText;
       public JTextField responseText;
       public JTextField responseDriverText;
-      
+
       // Constructor.
       public StatePanel()
       {
@@ -123,7 +127,7 @@ public class MouseDashboard extends JFrame
          responseDriverPanel.add(new JLabel("Response driver:"));
          responseDriverText = new JTextField(15);
          responseDriverText.setEditable(false);
-         responseDriverPanel.add(responseDriverText);         
+         responseDriverPanel.add(responseDriverText);
       }
 
 
@@ -135,30 +139,34 @@ public class MouseDashboard extends JFrame
          String sensorsString = "";
          for (int i = 0; i < sensors.length; i++)
          {
-        	 if (sensors[i] == 0.0f)
-        	 {
-        		 sensorsString += "0 ";
-        	 } else {
-        		 sensorsString += "1 ";
-        	 }
+            if (sensors[i] == 0.0f)
+            {
+               sensorsString += "0 ";
+            }
+            else
+            {
+               sensorsString += "1 ";
+            }
          }
          sensorsText.setText(sensorsString);
 
          // Update response.
          responseText.setText(Mouse.getResponseName(mouse.response));
-         
+
          // Update response driver.
-         switch(mouse.responseDriver) 
+         switch (mouse.responseDriver)
          {
          case ResponseDriver.TRAINING_OVERRIDE:
-        	 responseDriverText.setText("trainingOverride");
-        	 break;
+            responseDriverText.setText("trainingOverride");
+            break;
+
          case ResponseDriver.METAMORPH_DB:
-        	 responseDriverText.setText("metamorphDB");
-        	 break;
+            responseDriverText.setText("metamorphDB");
+            break;
+
          case ResponseDriver.METAMORPH_NN:
-        	 responseDriverText.setText("metamorphNN");
-        	 break;        	 
+            responseDriverText.setText("metamorphNN");
+            break;
          }
       }
    }

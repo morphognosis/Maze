@@ -35,6 +35,7 @@ public class Maze
       responseSequence.add(response);
    }
 
+
    // Get sensors.
    public float[] getSensors(int index)
    {
@@ -48,6 +49,7 @@ public class Maze
       }
    }
 
+
    // Get response.
    public int getResponse(int index)
    {
@@ -60,7 +62,8 @@ public class Maze
          return(-1);
       }
    }
-   
+
+
    // Print.
    public void print()
    {

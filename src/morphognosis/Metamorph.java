@@ -16,7 +16,7 @@ public class Metamorph
    // Response.
    public int    response;
    public String responseName;
-   
+
    // Are there multiple responses associated with morphognostic?
    public boolean ambiguous;
 
@@ -33,7 +33,7 @@ public class Metamorph
       this.morphognostic = morphognostic;
       this.response      = response;
       responseName       = "";
-      ambiguous = false;
+      ambiguous          = false;
       causeIndexes       = new ArrayList<Integer>();
       effectIndexes      = new ArrayList<Integer>();
       this.goalValue     = goalValue;
@@ -46,7 +46,7 @@ public class Metamorph
       this.morphognostic = morphognostic;
       this.response      = response;
       this.responseName  = responseName;
-      ambiguous = false;
+      ambiguous          = false;
       causeIndexes       = new ArrayList<Integer>();
       effectIndexes      = new ArrayList<Integer>();
       this.goalValue     = goalValue;
@@ -77,9 +77,11 @@ public class Metamorph
       Utility.saveString(output, responseName);
       if (ambiguous)
       {
-    	  Utility.saveInt(output,  1);
-      } else {
-    	  Utility.saveInt(output,  0);
+         Utility.saveInt(output, 1);
+      }
+      else
+      {
+         Utility.saveInt(output, 0);
       }
       int n = causeIndexes.size();
       Utility.saveInt(output, n);
@@ -104,14 +106,15 @@ public class Metamorph
       int           response      = Utility.loadInt(input);
       float         goalValue     = Utility.loadFloat(input);
       String        responseName  = Utility.loadString(input);
-      boolean ambiguous = false;
+      boolean       ambiguous     = false;
+
       if (Utility.loadInt(input) == 1)
       {
-    	  ambiguous = true;
+         ambiguous = true;
       }
-      Metamorph     metamorph     = new Metamorph(morphognostic, response, goalValue, responseName);
+      Metamorph metamorph = new Metamorph(morphognostic, response, goalValue, responseName);
       metamorph.ambiguous = ambiguous;
-      int           n             = Utility.loadInt(input);
+      int n = Utility.loadInt(input);
 
       for (int i = 0; i < n; i++)
       {
@@ -135,9 +138,11 @@ public class Metamorph
       System.out.println("ResponseName=" + responseName);
       if (ambiguous)
       {
-    	  System.out.println("Ambiguous=true");
-      } else {
-    	  System.out.println("Ambiguous=false");
+         System.out.println("Ambiguous=true");
+      }
+      else
+      {
+         System.out.println("Ambiguous=false");
       }
       System.out.print("Cause indexes:");
       for (Integer i : causeIndexes)

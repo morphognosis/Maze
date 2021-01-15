@@ -48,16 +48,16 @@ public class Main
       "      [-responseDriver <metamorphDB | metamorphNN> (response driver, default=metamorphDB)]\n" +
       "      [-randomSeed <random number seed> (default=" + DEFAULT_RANDOM_SEED + ")]\n" +
       "      [-writeMetamorphDataset [<file name>] (default=" + Mouse.METAMORPH_DATASET_FILE_NAME + ")]\n" +
-      "      Maze maker parameters:\n" +            
+      "      Maze maker parameters:\n" +
       "        [-numDoors <quantity> (default=" + Parameters.NUM_DOORS + ")]\n" +
-	  "        [-mazeInteriorSequenceLength <length> (default=" + Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH + ")]\n" +
-	  "        [-numContextMazes <quantity> (default=" + Parameters.NUM_CONTEXT_MAZES + ")]\n" +
-	  "        [-numIndependentMazes <quantity> (default=" + Parameters.NUM_INDEPENDENT_MAZES + ")]\n" +       
+      "        [-mazeInteriorSequenceLength <length> (default=" + Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH + ")]\n" +
+      "        [-numContextMazes <quantity> (default=" + Parameters.NUM_CONTEXT_MAZES + ")]\n" +
+      "        [-numIndependentMazes <quantity> (default=" + Parameters.NUM_INDEPENDENT_MAZES + ")]\n" +
       "      Metamorph Weka neural network parameters:\n" +
       "        [-NNlearningRate <quantity> (default=" + Parameters.NN_LEARNING_RATE + ")]\n" +
       "        [-NNmomentum <quantity> (default=" + Parameters.NN_MOMENTUM + ")]\n" +
       "        [-NNhiddenLayers <quantity> (default=\"" + Parameters.NN_HIDDEN_LAYERS + "\")]\n" +
-      "        [-NNtrainingTime <quantity> (default=" + Parameters.NN_TRAINING_TIME + ")]\n" +      
+      "        [-NNtrainingTime <quantity> (default=" + Parameters.NN_TRAINING_TIME + ")]\n" +
       "  Print parameters:\n" +
       "    java morphognosis.maze.Main -printParameters\n" +
       "  Version:\n" +
@@ -68,13 +68,13 @@ public class Main
 
    // Maze driver.
    public static MazeDriver mazeDriver;
-   
+
    // Response driver.
    public static int responseDriver;
 
    // Maze dashboard.
    public static MazeDashboard mazeDashboard;
-   
+
    // Random numbers.
    public static int    randomSeed = DEFAULT_RANDOM_SEED;
    public static Random random;
@@ -83,123 +83,128 @@ public class Main
    public static void run()
    {
       random.setSeed(randomSeed);
-      
+
       // Create dashboard.
       mazeDashboard = new MazeDashboard(mazeDriver);
-      
+
       // Clear maze success counts.
       int trainOK = 0;
-      int testOK = 0;
-      
+      int testOK  = 0;
+
       // Train mazes.
       for (int i = 0, j = mazeDriver.trainMazes.size(); i < j; i++)
       {
-	      mazeDriver.initTrainMaze(i, ResponseDriver.TRAINING_OVERRIDE);
-	         while (mazeDriver.stepMaze()) {}
+         mazeDriver.initTrainMaze(i, ResponseDriver.TRAINING_OVERRIDE);
+         while (mazeDriver.stepMaze()) {}
       }
-      
+
       // Train NN?
       if (responseDriver == ResponseDriver.METAMORPH_NN)
       {
-   		  mazeDashboard.log("Training neural network...");
-   	      mazeDriver.mouse.trainMetamorphNN();  	  
+         mazeDashboard.log("Training neural networks...");
+         mazeDriver.mouse.trainMetamorphNNs();
       }
-      
+
       // Validate training.
-      mazeDashboard.log("Train results:");      
+      mazeDashboard.log("Train results:");
       for (int i = 0, j = mazeDriver.trainMazes.size(); i < j; i++)
       {
-	      mazeDriver.initTrainMaze(i, responseDriver);
-	      mazeDashboard.log("Maze = " + i);
-	      boolean ok = true;
-	      ArrayList<Integer> responses = new ArrayList<Integer>();
-	      ArrayList<Integer> targets = new ArrayList<Integer>();
-	      String s = "";
-	         while (mazeDashboard.update() && mazeDriver.stepMaze()) 
-	         {
-	        	 responses.add(mazeDriver.response);
-	        	 targets.add(mazeDriver.target);
-	        	 s = "Maze = " + i + " responses: ";
-	        	 for (int r : responses)
-	        	 {
-	        		 s += r + " ";
-	        	 }
-	        	 s += "targets: ";
-	        	 for (int r : targets)
-	        	 {
-	        		 s += r + " ";
-	        	 }
-	        	 mazeDashboard.logLast(s);
-	        	 if (mazeDriver.response != mazeDriver.target)
-	        		 {
-	        		  ok = false;
-	        		 }
-	         }	         
-	         if (ok)
-	         {
-	        	 trainOK++;
-	        	 mazeDashboard.logLast(s + " OK");
-	         } else {
-	        	 mazeDashboard.logLast(s + " Error");
-	         }
+         mazeDriver.initTrainMaze(i, responseDriver);
+         mazeDashboard.log("Maze = " + i);
+         boolean            ok        = true;
+         ArrayList<Integer> responses = new ArrayList<Integer>();
+         ArrayList<Integer> targets   = new ArrayList<Integer>();
+         String             s         = "";
+         while (mazeDashboard.update() && mazeDriver.stepMaze())
+         {
+            responses.add(mazeDriver.response);
+            targets.add(mazeDriver.target);
+            s = "Maze = " + i + " responses: ";
+            for (int r : responses)
+            {
+               s += r + " ";
+            }
+            s += "targets: ";
+            for (int r : targets)
+            {
+               s += r + " ";
+            }
+            mazeDashboard.logLast(s);
+            if (mazeDriver.response != mazeDriver.target)
+            {
+               ok = false;
+            }
+         }
+         if (ok)
+         {
+            trainOK++;
+            mazeDashboard.logLast(s + " OK");
+         }
+         else
+         {
+            mazeDashboard.logLast(s + " Error");
+         }
       }
-      
+
       // Test mazes.
-      mazeDashboard.log("Test results:"); 
+      mazeDashboard.log("Test results:");
       for (int i = 0, j = mazeDriver.testMazes.size(); i < j; i++)
       {
-	      mazeDriver.initTestMaze(i, responseDriver);
-	      mazeDashboard.log("Maze = " + i);	      
-	      boolean ok = true;
-	      ArrayList<Integer> responses = new ArrayList<Integer>();
-	      ArrayList<Integer> targets = new ArrayList<Integer>();
-	      String s = "";
-	         while (mazeDashboard.update() && mazeDriver.stepMaze())
-	         {
-	        	 responses.add(mazeDriver.response);
-	        	 targets.add(mazeDriver.target);
-	        	 s = "Maze = " + i + " responses: ";
-	        	 for (int r : responses)
-	        	 {
-	        		 s += r + " ";
-	        	 }
-	        	 s += "targets: ";
-	        	 for (int r : targets)
-	        	 {
-	        		 s += r + " ";
-	        	 }
-	        	 mazeDashboard.logLast(s);
-	        	 if (mazeDriver.response != mazeDriver.target)
-	        		 {
-	        		  ok = false;
-	        		 }
-	         }
-	         if (ok)
-	         {
-	        	 testOK++;
-	        	 mazeDashboard.logLast(s + " OK");
-	         } else {
-	        	 mazeDashboard.logLast(s + " Error");
-	         }
+         mazeDriver.initTestMaze(i, responseDriver);
+         mazeDashboard.log("Maze = " + i);
+         boolean            ok        = true;
+         ArrayList<Integer> responses = new ArrayList<Integer>();
+         ArrayList<Integer> targets   = new ArrayList<Integer>();
+         String             s         = "";
+         while (mazeDashboard.update() && mazeDriver.stepMaze())
+         {
+            responses.add(mazeDriver.response);
+            targets.add(mazeDriver.target);
+            s = "Maze = " + i + " responses: ";
+            for (int r : responses)
+            {
+               s += r + " ";
+            }
+            s += "targets: ";
+            for (int r : targets)
+            {
+               s += r + " ";
+            }
+            mazeDashboard.logLast(s);
+            if (mazeDriver.response != mazeDriver.target)
+            {
+               ok = false;
+            }
+         }
+         if (ok)
+         {
+            testOK++;
+            mazeDashboard.logLast(s + " OK");
+         }
+         else
+         {
+            mazeDashboard.logLast(s + " Error");
+         }
       }
-      
-	   // Show results.
-	   String message = "Train correct/total = " + trainOK + "/" + mazeDriver.trainMazes.size();
-	   if (mazeDriver.trainMazes.size() > 0)
-	   {
-		   message += " (" + (((float)trainOK / (float)mazeDriver.trainMazes.size()) * 100.0f) + "%)";
-	   }
-	   mazeDashboard.log(message);
-	   message = "Test correct/total = " + testOK + "/" + mazeDriver.testMazes.size();
-	   if (mazeDriver.testMazes.size() > 0)
-	   {
-		   message += " (" + (((float)testOK / (float)mazeDriver.testMazes.size()) * 100.0f) + "%)";
-	   }	         
-	   mazeDashboard.log(message);
-	   
+
+      // Show results.
+      String message = "Train correct/total = " + trainOK + "/" + mazeDriver.trainMazes.size();
+      if (mazeDriver.trainMazes.size() > 0)
+      {
+         message += " (" + (((float)trainOK / (float)mazeDriver.trainMazes.size()) * 100.0f) + "%)";
+      }
+      mazeDashboard.log(message);
+      message = "Test correct/total = " + testOK + "/" + mazeDriver.testMazes.size();
+      if (mazeDriver.testMazes.size() > 0)
+      {
+         message += " (" + (((float)testOK / (float)mazeDriver.testMazes.size()) * 100.0f) + "%)";
+      }
+      mazeDashboard.log(message);
+
       // Wait for quit.
       while (mazeDashboard.update()) {}
    }
+
 
    // Main.
    // Exit codes:
@@ -210,16 +215,16 @@ public class Main
    {
       // Get options.
       responseDriver = ResponseDriver.METAMORPH_DB;
-      boolean batch               = false;
-      boolean printParms            = false;
-      boolean gotDatasetParm        = false;
-      String  datasetFilename       = Mouse.METAMORPH_DATASET_FILE_NAME;
+      boolean batch           = false;
+      boolean printParms      = false;
+      boolean gotDatasetParm  = false;
+      String  datasetFilename = Mouse.METAMORPH_DATASET_FILE_NAME;
 
       for (int i = 0; i < args.length; i++)
       {
          if (args[i].equals("-batch"))
          {
-               batch = true;
+            batch = true;
             continue;
          }
          if (args[i].equals("-responseDriver"))
@@ -350,7 +355,7 @@ public class Main
                System.exit(1);
             }
             continue;
-         }    	            
+         }
          if (args[i].equals("-NNlearningRate"))
          {
             i++;
@@ -522,16 +527,17 @@ public class Main
       // Initialize random numbers.
       random = new Random();
       random.setSeed(randomSeed);
-      
+
       // Create mazes.
-      try 
+      try
       {
-    	  MazeMaker.makeMazes();
-	  } catch (IOException e) {
-	         System.err.println("Cannot create mazes: " + e.getMessage());
-	         System.exit(1);
-	  }
-      
+         MazeMaker.makeMazes();
+      }
+      catch (IOException e) {
+         System.err.println("Cannot create mazes: " + e.getMessage());
+         System.exit(1);
+      }
+
       // Create maze driver.
       mazeDriver = new MazeDriver(responseDriver, randomSeed);
 
@@ -539,18 +545,19 @@ public class Main
       if (batch)
       {
          mazeDriver.run();
-      } else {
-    	  
-    	  // Run with dashboards.
-    	  run();
       }
-      
+      else
+      {
+         // Run with dashboards.
+         run();
+      }
+
       // Write metamorph dataset?
       if (gotDatasetParm)
       {
          try
          {
-            mazeDriver.mouse.writeMetamorphDataset(datasetFilename);
+            mazeDriver.mouse.writeMetamorphDataset(mazeDriver.mouse.metamorphs.length - 1, datasetFilename);
          }
          catch (Exception e)
          {

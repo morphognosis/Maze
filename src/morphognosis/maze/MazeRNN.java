@@ -12,9 +12,9 @@ import java.io.InputStream;
 public class MazeRNN
 {
    // RNN parameters.
-   public static int NUM_NEURONS   = 128;
-   public static int NUM_EPOCHS    = 1000;
-   
+   public static int NUM_NEURONS = 128;
+   public static int NUM_EPOCHS  = 1000;
+
    // Random seed.
    public static int RANDOM_SEED = 4517;
 
@@ -23,121 +23,121 @@ public class MazeRNN
       "Usage:\n" +
       "    java morphognosis.maze.MazeRNN\n" +
       "     [-numDoors <quantity> (default=" + Parameters.NUM_DOORS + ")]\n" +
-	  "     [-mazeInteriorSequenceLength <length> (default=" + Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH + ")]\n" +
-	  "     [-numContextMazes <quantity> (default=" + Parameters.NUM_CONTEXT_MAZES + ")]\n" +
-	  "     [-numIndependentMazes <quantity> (default=" + Parameters.NUM_INDEPENDENT_MAZES + ")]\n" +  	  
+      "     [-mazeInteriorSequenceLength <length> (default=" + Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH + ")]\n" +
+      "     [-numContextMazes <quantity> (default=" + Parameters.NUM_CONTEXT_MAZES + ")]\n" +
+      "     [-numIndependentMazes <quantity> (default=" + Parameters.NUM_INDEPENDENT_MAZES + ")]\n" +
       "     [-numNeurons <quantity> (default=" + NUM_NEURONS + ")]\n" +
       "     [-numEpochs <quantity> (default=" + NUM_EPOCHS + ")]\n" +
-	  "     [-randomSeed <seed> (default=" + RANDOM_SEED + ")]";     
+      "     [-randomSeed <seed> (default=" + RANDOM_SEED + ")]";
 
    public static void main(String[] args) throws IOException
    {
       for (int i = 0; i < args.length; i++)
       {
-          if (args[i].equals("-numDoors"))
-          {
-             i++;
-             if (i >= args.length)
-             {
-                System.err.println("Invalid numDoors option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             try
-             {
-                Parameters.NUM_DOORS = Integer.parseInt(args[i]);
-             }
-             catch (NumberFormatException e) {
-                System.err.println("Invalid numDoors option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             if (Parameters.NUM_DOORS < 0)
-             {
-                System.err.println("Invalid numDoors option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             continue;
-          }
-          if (args[i].equals("-mazeInteriorSequenceLength"))
-          {
-             i++;
-             if (i >= args.length)
-             {
-                System.err.println("Invalid mazeInteriorSequenceLength option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             try
-             {
-                Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH = Integer.parseInt(args[i]);
-             }
-             catch (NumberFormatException e) {
-                System.err.println("Invalid mazeInteriorSequenceLength option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             if (Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH < 0)
-             {
-                System.err.println("Invalid mazeInteriorSequenceLength option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             continue;
-          }
-          if (args[i].equals("-numContextMazes"))
-          {
-             i++;
-             if (i >= args.length)
-             {
-                System.err.println("Invalid numContextMazes option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             try
-             {
-                Parameters.NUM_CONTEXT_MAZES = Integer.parseInt(args[i]);
-             }
-             catch (NumberFormatException e) {
-                System.err.println("Invalid numContextMazes option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             if (Parameters.NUM_CONTEXT_MAZES < 0)
-             {
-                System.err.println("Invalid numContextMazes option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             continue;
-          }
-          if (args[i].equals("-numIndependentMazes"))
-          {
-             i++;
-             if (i >= args.length)
-             {
-                System.err.println("Invalid numIndependentMazes option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             try
-             {
-                Parameters.NUM_INDEPENDENT_MAZES = Integer.parseInt(args[i]);
-             }
-             catch (NumberFormatException e) {
-                System.err.println("Invalid numIndependentMazes option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             if (Parameters.NUM_INDEPENDENT_MAZES < 0)
-             {
-                System.err.println("Invalid numIndependentMazes option");
-                System.err.println(Usage);
-                System.exit(1);
-             }
-             continue;
-          }    	              
+         if (args[i].equals("-numDoors"))
+         {
+            i++;
+            if (i >= args.length)
+            {
+               System.err.println("Invalid numDoors option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            try
+            {
+               Parameters.NUM_DOORS = Integer.parseInt(args[i]);
+            }
+            catch (NumberFormatException e) {
+               System.err.println("Invalid numDoors option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            if (Parameters.NUM_DOORS < 0)
+            {
+               System.err.println("Invalid numDoors option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            continue;
+         }
+         if (args[i].equals("-mazeInteriorSequenceLength"))
+         {
+            i++;
+            if (i >= args.length)
+            {
+               System.err.println("Invalid mazeInteriorSequenceLength option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            try
+            {
+               Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH = Integer.parseInt(args[i]);
+            }
+            catch (NumberFormatException e) {
+               System.err.println("Invalid mazeInteriorSequenceLength option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            if (Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH < 0)
+            {
+               System.err.println("Invalid mazeInteriorSequenceLength option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            continue;
+         }
+         if (args[i].equals("-numContextMazes"))
+         {
+            i++;
+            if (i >= args.length)
+            {
+               System.err.println("Invalid numContextMazes option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            try
+            {
+               Parameters.NUM_CONTEXT_MAZES = Integer.parseInt(args[i]);
+            }
+            catch (NumberFormatException e) {
+               System.err.println("Invalid numContextMazes option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            if (Parameters.NUM_CONTEXT_MAZES < 0)
+            {
+               System.err.println("Invalid numContextMazes option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            continue;
+         }
+         if (args[i].equals("-numIndependentMazes"))
+         {
+            i++;
+            if (i >= args.length)
+            {
+               System.err.println("Invalid numIndependentMazes option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            try
+            {
+               Parameters.NUM_INDEPENDENT_MAZES = Integer.parseInt(args[i]);
+            }
+            catch (NumberFormatException e) {
+               System.err.println("Invalid numIndependentMazes option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            if (Parameters.NUM_INDEPENDENT_MAZES < 0)
+            {
+               System.err.println("Invalid numIndependentMazes option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            continue;
+         }
          if (args[i].equals("-numNeurons"))
          {
             i++;
@@ -215,7 +215,7 @@ public class MazeRNN
                System.exit(1);
             }
             continue;
-         }         
+         }
          if (args[i].equals("-help") || args[i].equals("-h") || args[i].equals("-?"))
          {
             System.out.println(Usage);
@@ -225,7 +225,7 @@ public class MazeRNN
          System.err.println(Usage);
          System.exit(1);
       }
-      
+
       // Make mazes.
       MazeMaker.makeMazes();
 

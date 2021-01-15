@@ -125,7 +125,7 @@ public class Morphognostic
          this.dx        = dx;
          this.dy        = dy;
          this.dimension = dimension;
-         this.epoch = epoch;
+         this.epoch     = epoch;
          this.duration  = duration;
          int d = dimension / sectorDimension;
          if ((d * sectorDimension) < dimension) { d++; }
@@ -144,7 +144,7 @@ public class Morphognostic
                sectors[x][y] = new Sector(sdx, sdy, sectorDimension);
             }
          }
-         eventDimensionMap       = null;
+         eventDimensionMap = null;
       }
 
 
@@ -169,9 +169,9 @@ public class Morphognostic
          {
             // Filter events within time frame of neighborhood.
             int et = eventTime - event.time;
-            if (et >= epoch && et < (epoch + duration))
+            if ((et >= epoch) && (et < (epoch + duration)))
             {
-                // Determine closest sector in which event occurred.
+               // Determine closest sector in which event occurred.
                int    ex   = event.x;
                int    ey   = event.y;
                Sector s    = sectors[sectors.length / 2][sectors.length / 2];
@@ -210,7 +210,7 @@ public class Morphognostic
                }
             }
          }
-         
+
          // Scale values by duration.
          for (int sx1 = 0, sx2 = sectors.length; sx1 < sx2; sx1++)
          {
@@ -221,7 +221,7 @@ public class Morphognostic
                {
                   if ((eventDimensionMap == null) || eventDimensionMap[d])
                   {
-                        s.eventDimensionValues[d] /= (float)duration;
+                     s.eventDimensionValues[d] /= (float)duration;
                   }
                }
             }
@@ -419,7 +419,7 @@ public class Morphognostic
       }
       if (NUM_NEIGHBORHOODS > 0)
       {
-    	 Neighborhood n = neighborhoods.get(NUM_NEIGHBORHOODS - 1);
+         Neighborhood n = neighborhoods.get(NUM_NEIGHBORHOODS - 1);
          maxEventAge = n.epoch + n.duration - 1;
       }
       else
@@ -728,7 +728,7 @@ public class Morphognostic
          System.out.println("neighborhood=" + i);
          System.out.println("\tdx/dy=" + n.dx + "/" + n.dy);
          System.out.println("\tdimension=" + n.dimension);
-         System.out.println("\tepoch=" + n.epoch);         
+         System.out.println("\tepoch=" + n.epoch);
          System.out.println("\tduration=" + n.duration);
          if (n.eventDimensionMap == null)
          {

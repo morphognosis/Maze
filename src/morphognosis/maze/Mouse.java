@@ -43,14 +43,14 @@ public class Mouse
    public int responseDriver;
 
    // Morphognostics.
-   public Morphognostic morphognostic;
+   public Morphognostic[] morphognostics;
 
    // Metamorphs.
-   public int currentMetamorphIdx;
-   public ArrayList<Metamorph> metamorphs;
+   public int[] currentMetamorphIdxs;
+   public       ArrayList<Metamorph>[] metamorphs;
 
-   // Metamorph neural network.
-   public MetamorphNN metamorphNN;
+   // Metamorph neural networks.
+   public MetamorphNN[] metamorphNNs;
 
    // Metamorph dataset file name.
    public static final String METAMORPH_DATASET_FILE_NAME = "metamorphs.csv";
@@ -76,6 +76,7 @@ public class Mouse
     */
 
    // Constructor.
+   @SuppressWarnings("unchecked")
    public Mouse(int numSensors, int numResponses, Random random)
    {
       NUM_SENSORS   = numSensors;
@@ -91,8 +92,8 @@ public class Mouse
       response         = WAIT_RESPONSE;
       overrideResponse = -1;
 
-
-      // Initialize Morphognostic.
+      // Initialize Morphognostics.
+      morphognostics = new Morphognostic[2];
       int eventDimensions = NUM_SENSORS;
       boolean[][] neighborhoodEventDimensionMap = new boolean[Parameters.NUM_NEIGHBORHOODS][eventDimensions];
       for (int i = 0; i < Parameters.NUM_NEIGHBORHOODS; i++)
@@ -102,16 +103,36 @@ public class Mouse
             neighborhoodEventDimensionMap[i][j] = true;
          }
       }
-      morphognostic = new Morphognostic(Orientation.NORTH,
-                                        eventDimensions,
-                                        neighborhoodEventDimensionMap,
-                                        Parameters.NUM_NEIGHBORHOODS,
-                                        Parameters.NEIGHBORHOOD_DIMENSIONS,
-                                        Parameters.NEIGHBORHOOD_DURATIONS);
+      morphognostics[1] = new Morphognostic(Orientation.NORTH,
+                                            eventDimensions,
+                                            neighborhoodEventDimensionMap,
+                                            Parameters.NUM_NEIGHBORHOODS,
+                                            Parameters.NEIGHBORHOOD_DIMENSIONS,
+                                            Parameters.NEIGHBORHOOD_DURATIONS);
+      neighborhoodEventDimensionMap = new boolean[1][eventDimensions];
+      for (int j = 0; j < eventDimensions; j++)
+      {
+         neighborhoodEventDimensionMap[0][j] = true;
+      }
+      int numNeighborhoods = 1;
+      int[][] neighborhoodDimensions = { Parameters.NEIGHBORHOOD_DIMENSIONS[0] };
+      int[] neighborhoodDurations    = { Parameters.NEIGHBORHOOD_DURATIONS[0] };
+      morphognostics[0] = new Morphognostic(Orientation.NORTH,
+                                            eventDimensions,
+                                            neighborhoodEventDimensionMap,
+                                            numNeighborhoods,
+                                            neighborhoodDimensions,
+                                            neighborhoodDurations);
 
       // Create metamorphs.
-      currentMetamorphIdx = -1;
-      metamorphs          = new ArrayList<Metamorph>();
+      currentMetamorphIdxs    = new int[2];
+      currentMetamorphIdxs[0] = currentMetamorphIdxs[1] = -1;
+      metamorphs    = new ArrayList[2];
+      metamorphs[0] = new ArrayList<Metamorph>();
+      metamorphs[1] = new ArrayList<Metamorph>();
+
+      // Metamorph neural networks.
+      metamorphNNs = new MetamorphNN[2];
 
       // Initialize response driver.
       responseDriver = ResponseDriver.TRAINING_OVERRIDE;
@@ -127,8 +148,9 @@ public class Mouse
       }
       response         = WAIT_RESPONSE;
       overrideResponse = -1;
-      morphognostic.clear();
-      currentMetamorphIdx = -1;
+      morphognostics[0].clear();
+      morphognostics[1].clear();
+      currentMetamorphIdxs[0] = currentMetamorphIdxs[1] = -1;
    }
 
 
@@ -153,13 +175,14 @@ public class Mouse
    // Save mouse.
    public void save(DataOutputStream writer) throws IOException
    {
-      morphognostic.save(writer);
+      morphognostics[0].save(writer);
+      morphognostics[1].save(writer);
       Utility.saveInt(writer, responseDriver);
       writer.flush();
    }
 
 
-   // Load bee from file.
+   // Load mouse from file.
    public void load(String filename) throws IOException
    {
       DataInputStream reader;
@@ -180,8 +203,9 @@ public class Mouse
    // Load mouse.
    public void load(DataInputStream reader) throws IOException
    {
-      morphognostic = Morphognostic.load(reader);
-      responseDriver        = Utility.loadInt(reader);
+      morphognostics[0] = Morphognostic.load(reader);
+      morphognostics[1] = Morphognostic.load(reader);
+      responseDriver    = Utility.loadInt(reader);
    }
 
 
@@ -193,8 +217,8 @@ public class Mouse
          this.sensors[i] = sensors[i];
       }
 
-      // Update morphognostic.
-      updateMorphognostic();
+      // Update morphognostics.
+      updateMorphognostics();
 
       // Respond.
       switch (responseDriver)
@@ -215,7 +239,7 @@ public class Mouse
       // Update metamorphs if training.
       if (responseDriver == ResponseDriver.TRAINING_OVERRIDE)
       {
-         updateMetamorphs(morphognostic, response, goalValue(sensors, response));
+         updateMetamorphs(morphognostics, response, goalValue(sensors, response));
       }
 
       return(response);
@@ -229,49 +253,53 @@ public class Mouse
    }
 
 
-   // Update morphognostic.
-   public void updateMorphognostic()
+   // Update morphognostics.
+   public void updateMorphognostics()
    {
-      morphognostic.update(sensors, 0, 0);
+      morphognostics[0].update(sensors, 0, 0);
+      morphognostics[1].update(sensors, 0, 0);
    }
 
 
    // Get metamorph DB response.
-   public float metamorphDBresponse()
+   public void metamorphDBresponse()
    {
       Metamorph metamorph = null;
-      float     dist         = 0.0f;
+      float     dist      = 0.0f;
       float     d2;
 
-      for (Metamorph m : metamorphs)
+      for (int i = 0; i < metamorphs.length; i++)
       {
-    	 if (m.ambiguous)continue; 
-         d2 = morphognostic.compare(m.morphognostic);
-         if ((metamorph == null) || (d2 < dist))
+         for (Metamorph m : metamorphs[i])
          {
-            dist         = d2;
-            metamorph = m;
-         }
-         else
-         {
-            if (d2 == dist)
+            if (!m.ambiguous)
             {
-	               if (random.nextBoolean())
-	               {
-	                  metamorph = m;
-	               }            	   
+               d2 = morphognostics[i].compare(m.morphognostic);
+               if ((metamorph == null) || (d2 < dist))
+               {
+                  dist      = d2;
+                  metamorph = m;
+               }
+               else
+               {
+                  if (d2 == dist)
+                  {
+                     if (random.nextBoolean())
+                     {
+                        metamorph = m;
+                     }
+                  }
+               }
             }
          }
       }
       if (metamorph != null)
       {
          response = metamorph.response;
-         return dist;
       }
       else
       {
-         response = -1;
-         return -1.0f;
+         response = WAIT_RESPONSE;
       }
    }
 
@@ -279,14 +307,40 @@ public class Mouse
    // Get metamorph neural network response.
    public void metamorphNNresponse()
    {
-      if (metamorphNN != null)
+      if ((metamorphNNs[0] != null) && (metamorphNNs[1] != null))
       {
-         response = metamorphNN.respond(morphognostic);
+         double probabilities[][] = new double[2][];
+         probabilities[0] = metamorphNNs[0].responseProbabilities(morphognostics[0]);
+         probabilities[1] = metamorphNNs[1].responseProbabilities(morphognostics[1]);
+         double p = 0.0;
+         response = -1;
+         for (int i = 0; i < 2; i++)
+         {
+            for (int j = 0; j < probabilities[i].length; j++)
+            {
+               if ((response == -1) || (probabilities[i][j] > p))
+               {
+                  response = j;
+                  p        = probabilities[i][j];
+               }
+               else if (probabilities[i][j] == p)
+               {
+                  if (random.nextBoolean())
+                  {
+                     response = j;
+                  }
+               }
+            }
+         }
+         if (response == -1)
+         {
+            response = WAIT_RESPONSE;
+         }
       }
       else
       {
          System.err.println("Must train metamorph neural network");
-         response = -1;
+         response = WAIT_RESPONSE;
       }
    }
 
@@ -298,28 +352,33 @@ public class Mouse
       float     minCompare   = 0.0f;
       float     maxGoalValue = 0.0f;
 
-      for (int i = 0, j = metamorphs.size(); i < j; i++)
+      for (int i = 0; i < metamorphs.length; i++)
       {
-         Metamorph m       = metamorphs.get(i);
-         float     compare = m.morphognostic.compare(morphognostic);
-         if (metamorph == null)
+         for (Metamorph m : metamorphs[i])
          {
-            metamorph    = m;
-            minCompare   = compare;
-            maxGoalValue = metamorph.goalValue;
-         }
-         else if (compare < minCompare)
-         {
-            metamorph    = m;
-            minCompare   = compare;
-            maxGoalValue = metamorph.goalValue;
-         }
-         else if (compare == minCompare)
-         {
-            if (m.goalValue > maxGoalValue)
+            if (!m.ambiguous)
             {
-               metamorph    = m;
-               maxGoalValue = metamorph.goalValue;
+               float compare = m.morphognostic.compare(morphognostics[i]);
+               if (metamorph == null)
+               {
+                  metamorph    = m;
+                  minCompare   = compare;
+                  maxGoalValue = metamorph.goalValue;
+               }
+               else if (compare < minCompare)
+               {
+                  metamorph    = m;
+                  minCompare   = compare;
+                  maxGoalValue = metamorph.goalValue;
+               }
+               else if (compare == minCompare)
+               {
+                  if (m.goalValue > maxGoalValue)
+                  {
+                     metamorph    = m;
+                     maxGoalValue = metamorph.goalValue;
+                  }
+               }
             }
          }
       }
@@ -329,64 +388,69 @@ public class Mouse
       }
       else
       {
-         response = -1;
+         response = WAIT_RESPONSE;
       }
    }
 
 
    // Update metamorphs.
-   public void updateMetamorphs(Morphognostic morphognostic, int response, float goalValue)
+   public void updateMetamorphs(Morphognostic[] morphognostics, int response, float goalValue)
    {
-      Metamorph metamorph = new Metamorph(morphognostic.clone(), response,
-                                          goalValue, getResponseName(response));
+      for (int n = 0; n < morphognostics.length; n++)
+      {
+         Metamorph metamorph = new Metamorph(morphognostics[n].clone(), response,
+                                             goalValue, getResponseName(response));
 
-      metamorph.morphognostic.orientation = Orientation.NORTH;
-      int foundIdx = -1;
-      for (int i = 0, j = metamorphs.size(); i < j; i++)
-      {
-         Metamorph m = metamorphs.get(i);
-         if (m.morphognostic.compare(metamorph.morphognostic) <= EQUIVALENT_MORPHOGNOSTIC_DISTANCE)
+         metamorph.morphognostic.orientation = Orientation.NORTH;
+         int foundIdx = -1;
+         for (int i = 0, j = metamorphs[n].size(); i < j; i++)
          {
-        	if (m.response == metamorph.response) 
-        	{
-        		foundIdx = i;
-        	} else {
-        		metamorph.ambiguous = true;
-        	}
-            break;
-         }
-      }
-      if (foundIdx == -1)
-      {
-         metamorphs.add(metamorph);
-         foundIdx = metamorphs.size() - 1;
-      }
-      if (currentMetamorphIdx != -1)
-      {
-         Metamorph currentMetamorph = metamorphs.get(currentMetamorphIdx);
-         for (int i = 0, j = currentMetamorph.effectIndexes.size(); i < j; i++)
-         {
-            if (currentMetamorph.effectIndexes.get(i) == foundIdx)
+            Metamorph m = metamorphs[n].get(i);
+            if (m.morphognostic.compare(metamorph.morphognostic) <= EQUIVALENT_MORPHOGNOSTIC_DISTANCE)
             {
-               foundIdx = -1;
+               if (m.response == metamorph.response)
+               {
+                  foundIdx = i;
+               }
+               else
+               {
+                  m.ambiguous = metamorph.ambiguous = true;
+               }
                break;
             }
          }
-         if (foundIdx != -1)
+         if (foundIdx == -1)
          {
-            currentMetamorph.effectIndexes.add(foundIdx);
-            metamorphs.get(foundIdx).causeIndexes.add(currentMetamorphIdx);
-
-            // Propagate goal value.
-            propagateGoalValue(currentMetamorph, metamorphs.get(foundIdx).goalValue);
+            metamorphs[n].add(metamorph);
+            foundIdx = metamorphs[n].size() - 1;
          }
+         if (currentMetamorphIdxs[n] != -1)
+         {
+            Metamorph currentMetamorph = metamorphs[n].get(currentMetamorphIdxs[n]);
+            for (int i = 0, j = currentMetamorph.effectIndexes.size(); i < j; i++)
+            {
+               if (currentMetamorph.effectIndexes.get(i) == foundIdx)
+               {
+                  foundIdx = -1;
+                  break;
+               }
+            }
+            if (foundIdx != -1)
+            {
+               currentMetamorph.effectIndexes.add(foundIdx);
+               metamorphs[n].get(foundIdx).causeIndexes.add(currentMetamorphIdxs[n]);
+
+               // Propagate goal value.
+               propagateGoalValue(n, currentMetamorph, metamorphs[n].get(foundIdx).goalValue);
+            }
+         }
+         currentMetamorphIdxs[n] = foundIdx;
       }
-      currentMetamorphIdx = foundIdx;
    }
 
 
    // Propagate goal value.
-   public void propagateGoalValue(Metamorph metamorph, float effectGoalValue)
+   public void propagateGoalValue(int n, Metamorph metamorph, float effectGoalValue)
    {
       float v = effectGoalValue * Mouse.GOAL_VALUE_DISCOUNT_FACTOR;
 
@@ -395,26 +459,29 @@ public class Mouse
          metamorph.goalValue = v;
          for (int i = 0, j = metamorph.causeIndexes.size(); i < j; i++)
          {
-            propagateGoalValue(metamorphs.get(metamorph.causeIndexes.get(i)), v);
+            propagateGoalValue(n, metamorphs[n].get(metamorph.causeIndexes.get(i)), v);
          }
       }
    }
 
 
    // Train metamorph neural network.
-   public void trainMetamorphNN()
+   public void trainMetamorphNNs()
    {
-      metamorphNN = new MetamorphNN(random);
-      metamorphNN.train(metamorphs);
+      for (int i = 0; i < metamorphNNs.length; i++)
+      {
+         metamorphNNs[i] = new MetamorphNN(random);
+         metamorphNNs[i].train(metamorphs[i]);
+      }
    }
 
 
    // Save metamorph neural network.
-   public void saveMetamorphNN(String filename)
+   public void saveMetamorphNN(int n, String filename)
    {
-      if (metamorphNN != null)
+      if (metamorphNNs[n] != null)
       {
-         metamorphNN.saveModel(filename);
+         metamorphNNs[n].saveModel(filename);
       }
       else
       {
@@ -424,26 +491,29 @@ public class Mouse
 
 
    // Load metamorph neural network.
-   public void loadMetamorphNN(String filename)
+   public void loadMetamorphNN(int n, String filename)
    {
-      if (metamorphNN == null)
+      if (metamorphNNs[n] == null)
       {
-         metamorphNN = new MetamorphNN(random);
+         metamorphNNs[n] = new MetamorphNN(random);
       }
-      metamorphNN.loadModel(filename);
+      metamorphNNs[n].loadModel(filename);
    }
 
 
    // Clear metamorphs.
    public void clearMetamorphs()
    {
-      metamorphs.clear();
-      currentMetamorphIdx = -1;
+      for (int i = 0; i < metamorphNNs.length; i++)
+      {
+         metamorphs[i].clear();
+         currentMetamorphIdxs[i] = -1;
+      }
    }
 
 
    // Write metamporph dataset.
-   public void writeMetamorphDataset(String filename) throws Exception
+   public void writeMetamorphDataset(int n, String filename) throws Exception
    {
       FileOutputStream output;
 
@@ -455,18 +525,18 @@ public class Mouse
       {
          throw new IOException("Cannot open output file " + filename + ":" + e.getMessage());
       }
-      if (metamorphs.size() > 0)
+      if (metamorphs[n].size() > 0)
       {
-         Morphognostic morphognostic = metamorphs.get(0).morphognostic;
+         Morphognostic morphognostic = metamorphs[n].get(0).morphognostic;
          String        oldlinesep    = System.getProperty("line.separator");
          System.setProperty("line.separator", "\n");
          PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output)));
          for (int i = 0; i < morphognostic.NUM_NEIGHBORHOODS; i++)
          {
-            int n = morphognostic.neighborhoods.get(i).sectors.length;
-            for (int x = 0; x < n; x++)
+            int l = morphognostic.neighborhoods.get(i).sectors.length;
+            for (int x = 0; x < l; x++)
             {
-               for (int y = 0; y < n; y++)
+               for (int y = 0; y < l; y++)
                {
                   for (int d = 0; d < morphognostic.eventDimensions; d++)
                   {
@@ -476,7 +546,7 @@ public class Mouse
             }
          }
          writer.println("response");
-         for (Metamorph m : metamorphs)
+         for (Metamorph m : metamorphs[n])
          {
             writer.println(morphognostic2csv(m.morphognostic) + "," + m.response);
          }

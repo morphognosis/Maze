@@ -38,7 +38,7 @@ public class MazeDashboard extends JFrame
    public static final int MIN_STEP_DELAY = 0;
    public static final int MAX_STEP_DELAY = 150;
    public int              stepDelay      = MAX_STEP_DELAY;
-   
+
    // Mouse dashboard.
    public MouseDashboard mouseDashboard;
 
@@ -48,8 +48,8 @@ public class MazeDashboard extends JFrame
    // Constructor.
    public MazeDashboard(MazeDriver mazeDriver)
    {
-      this.mazeDriver   = mazeDriver;
-      
+      this.mazeDriver = mazeDriver;
+
       // Create mouse dashboard.
       mouseDashboard = new MouseDashboard(mazeDriver.mouse);
 
@@ -68,8 +68,8 @@ public class MazeDashboard extends JFrame
       basePanel.setLayout(new BorderLayout());
 
       // Create log.
-     log = new TextArea("", 20, 80, TextArea.SCROLLBARS_BOTH);
-     log.setEditable(false);
+      log = new TextArea("", 20, 80, TextArea.SCROLLBARS_BOTH);
+      log.setEditable(false);
       basePanel.add(log, BorderLayout.NORTH);
 
       // Create speed control.
@@ -81,6 +81,7 @@ public class MazeDashboard extends JFrame
       setLocation();
       setVisible(true);
    }
+
 
    // Set dashboard location.
    public void setLocation()
@@ -97,7 +98,7 @@ public class MazeDashboard extends JFrame
 
    private int timer = 0;
    public boolean update()
-   {    
+   {
       // Update mouse dashboard.
       mouseDashboard.update();
 
@@ -140,29 +141,31 @@ public class MazeDashboard extends JFrame
    // Log.
    public void log(String event)
    {
-	   log.append(event + "\n");
+      log.append(event + "\n");
    }
-   
-   // Overwrite last log line. 
+
+
+   // Overwrite last log line.
    public void logLast(String event)
    {
-       String [] lines = log.getText().split("\n");
-       if (lines.length > 0)
-       {
-	       lines[lines.length -1] = event + "\n";
-	       log.setText(String.join("\n", lines));
-       }
-   }   
-   
+      String [] lines = log.getText().split("\n");
+      if (lines.length > 0)
+      {
+         lines[lines.length - 1] = event + "\n";
+         log.setText(String.join("\n", lines));
+      }
+   }
+
+
    // Speed control panel.
    class SpeedControl extends JPanel implements ActionListener, ChangeListener
    {
       private static final long serialVersionUID = 0L;
 
       // Components.
-      JLabel    stepCounter;
-      JSlider   speedSlider;
-      JButton   stepButton;
+      JLabel  stepCounter;
+      JSlider speedSlider;
+      JButton stepButton;
 
       // Constructor.
       SpeedControl()
