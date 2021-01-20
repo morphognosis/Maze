@@ -53,6 +53,8 @@ public class Main
       "        [-mazeInteriorSequenceLength <length> (default=" + Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH + ")]\n" +
       "        [-numContextMazes <quantity> (default=" + Parameters.NUM_CONTEXT_MAZES + ")]\n" +
       "        [-numIndependentMazes <quantity> (default=" + Parameters.NUM_INDEPENDENT_MAZES + ")]\n" +
+      "      Morphognosis parameters:\n" +
+      "        [-neighborhoodDurations <comma-separated values> (implies number of neighborhoods)]\n" +
       "      Metamorph Weka neural network parameters:\n" +
       "        [-NNlearningRate <quantity> (default=" + Parameters.NN_LEARNING_RATE + ")]\n" +
       "        [-NNmomentum <quantity> (default=" + Parameters.NN_MOMENTUM + ")]\n" +
@@ -353,6 +355,36 @@ public class Main
                System.err.println("Invalid numIndependentMazes option");
                System.err.println(Usage);
                System.exit(1);
+            }
+            continue;
+         }
+         if (args[i].equals("-neighborhoodDurations"))
+         {
+            i++;
+            if (i >= args.length)
+            {
+               System.err.println("Invalid neighborhoodDurations option");
+               System.err.println(Usage);
+               System.exit(1);
+            }
+            String[] durations = args[i].split(",");
+            int n = durations.length;
+            Parameters.NUM_NEIGHBORHOODS       = n;
+            Parameters.NEIGHBORHOOD_DIMENSIONS = new int[n][2];
+            Parameters.NEIGHBORHOOD_DURATIONS  = new int[n];
+            for (int j = 0; j < n; j++)
+            {
+               Parameters.NEIGHBORHOOD_DIMENSIONS[j][0] = 1;
+               Parameters.NEIGHBORHOOD_DIMENSIONS[j][1] = 1;
+               try
+               {
+                  Parameters.NEIGHBORHOOD_DURATIONS[j] = Integer.parseInt(durations[j]);
+               }
+               catch (NumberFormatException e) {
+                  System.err.println("Invalid neighborhoodDurations option");
+                  System.err.println(Usage);
+                  System.exit(1);
+               }
             }
             continue;
          }
