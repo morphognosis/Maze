@@ -128,9 +128,11 @@ Usage:
       [-writeMetamorphDataset [<file name>] (default=metamorphs.csv)]
       Maze maker parameters:
         [-numDoors <quantity> (default=3)]
-        [-mazeInteriorSequenceLength <length> (default=5)]
+        [-mazeInteriorSequenceLength <length> (default=4)]
         [-numContextMazes <quantity> (default=5)]
-        [-numIndependentMazes <quantity> (default=5)]
+        [-numIndependentMazes <quantity> (default=2)]
+      Morphognosis parameters:
+        [-neighborhoodDurations <comma-separated values> (implies number of neighborhoods)]
       Metamorph Weka neural network parameters:
         [-NNlearningRate <quantity> (default=0.1)]
         [-NNmomentum <quantity> (default=0.2)]
