@@ -76,10 +76,7 @@ public class MetamorphNN
       Instances metamorphInstances = new Instances("metamorphs", attributeNames, 0);
       for (Metamorph metamorph : metamorphs)
       {
-         if (!metamorph.ambiguous)
-         {
-            metamorphInstances.add(createInstance(metamorph.morphognostic, metamorph.response));
-         }
+         metamorphInstances.add(createInstance(metamorph.morphognostic, metamorph.response));
       }
       metamorphInstances.setClassIndex(numAttributes - 1);
 

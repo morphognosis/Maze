@@ -19,7 +19,7 @@ public class MazeMaker
       "Usage:\n" +
       "    java morphognosis.maze.MazeRNN\n" +
       "     [-numDoors <quantity> (default=" + Parameters.NUM_DOORS + ")]\n" +
-      "     [-mazeInteriorSequenceLength <length> (default=" + Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH + ")]\n" +
+      "     [-mazeInteriorLength <length> (default=" + Parameters.MAZE_INTERIOR_LENGTH + ")]\n" +
       "     [-numContextMazes <quantity> (default=" + Parameters.NUM_CONTEXT_MAZES + ")]\n" +
       "     [-numIndependentMazes <quantity> (default=" + Parameters.NUM_INDEPENDENT_MAZES + ")]\n" +
       "     [-randomSeed <seed> (default=" + Main.DEFAULT_RANDOM_SEED + ")]";
@@ -52,7 +52,7 @@ public class MazeMaker
       }
       ProcessBuilder processBuilder = new ProcessBuilder("python", "maze_maker.py",
                                                          "--num_doors", (Parameters.NUM_DOORS + ""),
-                                                         "--maze_interior_sequence_length", (Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH + ""),
+                                                         "--maze_interior_length", (Parameters.MAZE_INTERIOR_LENGTH + ""),
                                                          "--num_context_mazes", (Parameters.NUM_CONTEXT_MAZES + ""),
                                                          "--num_independent_mazes", (Parameters.NUM_INDEPENDENT_MAZES + ""),
                                                          "--random_seed", (RANDOM_SEED + "")
@@ -97,27 +97,27 @@ public class MazeMaker
             }
             continue;
          }
-         if (args[i].equals("-mazeInteriorSequenceLength"))
+         if (args[i].equals("-mazeInteriorLength"))
          {
             i++;
             if (i >= args.length)
             {
-               System.err.println("Invalid mazeInteriorSequenceLength option");
+               System.err.println("Invalid mazeInteriorLength option");
                System.err.println(Usage);
                System.exit(1);
             }
             try
             {
-               Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH = Integer.parseInt(args[i]);
+               Parameters.MAZE_INTERIOR_LENGTH = Integer.parseInt(args[i]);
             }
             catch (NumberFormatException e) {
-               System.err.println("Invalid mazeInteriorSequenceLength option");
+               System.err.println("Invalid mazeInteriorLength option");
                System.err.println(Usage);
                System.exit(1);
             }
-            if (Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH < 0)
+            if (Parameters.MAZE_INTERIOR_LENGTH < 0)
             {
-               System.err.println("Invalid mazeInteriorSequenceLength option");
+               System.err.println("Invalid mazeInteriorLength option");
                System.err.println(Usage);
                System.exit(1);
             }

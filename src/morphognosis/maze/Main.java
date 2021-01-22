@@ -50,7 +50,7 @@ public class Main
       "      [-writeMetamorphDataset [<file name>] (default=" + Mouse.METAMORPH_DATASET_FILE_NAME + ")]\n" +
       "      Maze maker parameters:\n" +
       "        [-numDoors <quantity> (default=" + Parameters.NUM_DOORS + ")]\n" +
-      "        [-mazeInteriorSequenceLength <length> (default=" + Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH + ")]\n" +
+      "        [-mazeInteriorLength <length> (default=" + Parameters.MAZE_INTERIOR_LENGTH + ")]\n" +
       "        [-numContextMazes <quantity> (default=" + Parameters.NUM_CONTEXT_MAZES + ")]\n" +
       "        [-numIndependentMazes <quantity> (default=" + Parameters.NUM_INDEPENDENT_MAZES + ")]\n" +
       "      Morphognosis parameters:\n" +
@@ -280,27 +280,27 @@ public class Main
             }
             continue;
          }
-         if (args[i].equals("-mazeInteriorSequenceLength"))
+         if (args[i].equals("-mazeInteriorLength"))
          {
             i++;
             if (i >= args.length)
             {
-               System.err.println("Invalid mazeInteriorSequenceLength option");
+               System.err.println("Invalid mazeInteriorLength option");
                System.err.println(Usage);
                System.exit(1);
             }
             try
             {
-               Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH = Integer.parseInt(args[i]);
+               Parameters.MAZE_INTERIOR_LENGTH = Integer.parseInt(args[i]);
             }
             catch (NumberFormatException e) {
-               System.err.println("Invalid mazeInteriorSequenceLength option");
+               System.err.println("Invalid mazeInteriorLength option");
                System.err.println(Usage);
                System.exit(1);
             }
-            if (Parameters.MAZE_INTERIOR_SEQUENCE_LENGTH < 0)
+            if (Parameters.MAZE_INTERIOR_LENGTH < 0)
             {
-               System.err.println("Invalid mazeInteriorSequenceLength option");
+               System.err.println("Invalid mazeInteriorLength option");
                System.err.println(Usage);
                System.exit(1);
             }

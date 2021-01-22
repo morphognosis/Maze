@@ -49,14 +49,7 @@ These are the types of rooms:
 Input format:
 
 ```
-<room identifier><context room marks><maze entry marks><context end room marks>
-
-Room identifier format:
-context_begin_room = [1,0,0,0,0]
-maze_entry = [0,1,0,0,0]
-maze_interior = [0,0,1,0,0]
-context_end_room = [0,0,0,1,0]
-empty_room = [0,0,0,0,1]
+<context room marks><maze entry room marks><maze interior room mark><context end room marks>
 ```
 
 Output:
@@ -128,7 +121,7 @@ Usage:
       [-writeMetamorphDataset [<file name>] (default=metamorphs.csv)]
       Maze maker parameters:
         [-numDoors <quantity> (default=3)]
-        [-mazeInteriorSequenceLength <length> (default=4)]
+        [-mazeInteriorLength <length> (default=4)]
         [-numContextMazes <quantity> (default=5)]
         [-numIndependentMazes <quantity> (default=2)]
       Morphognosis parameters:

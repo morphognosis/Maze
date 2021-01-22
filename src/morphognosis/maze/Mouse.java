@@ -267,6 +267,7 @@ public class Mouse
       Metamorph metamorph = null;
       float     dist      = 0.0f;
       float     d2;
+      int       l = 0;
 
       for (int i = 0; i < metamorphs.length; i++)
       {
@@ -279,14 +280,23 @@ public class Mouse
                {
                   dist      = d2;
                   metamorph = m;
+                  l         = i;
                }
                else
                {
                   if (d2 == dist)
                   {
-                     if (random.nextBoolean())
+                     if (l < i)
                      {
                         metamorph = m;
+                        l         = i;
+                     }
+                     else
+                     {
+                        if (random.nextBoolean())
+                        {
+                           metamorph = m;
+                        }
                      }
                   }
                }
@@ -318,17 +328,10 @@ public class Mouse
          {
             for (int j = 0; j < probabilities[i].length; j++)
             {
-               if ((response == -1) || (probabilities[i][j] > p))
+               if ((response == -1) || (probabilities[i][j] >= p))
                {
                   response = j;
                   p        = probabilities[i][j];
-               }
-               else if (probabilities[i][j] == p)
-               {
-                  if (random.nextBoolean())
-                  {
-                     response = j;
-                  }
                }
             }
          }
