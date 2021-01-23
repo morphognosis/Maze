@@ -111,7 +111,7 @@ public class MouseDashboard extends JFrame
          panel.setLayout(new FlowLayout(FlowLayout.LEFT));
          add(panel, BorderLayout.NORTH);
          panel.add(new JLabel("Sensors:"));
-         sensorsText = new TextArea("", 1, 40, TextArea.SCROLLBARS_HORIZONTAL_ONLY);
+         sensorsText = new TextArea("", 2, 40, TextArea.SCROLLBARS_HORIZONTAL_ONLY);
          sensorsText.setEditable(false);
          panel.add(sensorsText);
          JPanel responsePanel = new JPanel();
