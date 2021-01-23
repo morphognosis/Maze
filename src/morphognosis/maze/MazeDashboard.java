@@ -18,6 +18,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -141,18 +142,32 @@ public class MazeDashboard extends JFrame
    // Log.
    public void log(String event)
    {
-      log.append(event + "\n");
+      SwingUtilities.invokeLater(new Runnable()
+                                 {
+                                    public void run()
+                                    {
+                                       log.append(event + "\n");
+                                    }
+                                 }
+                                 );
    }
 
 
    // Overwrite last log line.
-   public void logLast(String event)
+   public void logLast(final String event)
    {
       String [] lines = log.getText().split("\n");
       if (lines.length > 0)
       {
          lines[lines.length - 1] = event + "\n";
-         log.setText(String.join("\n", lines));
+         SwingUtilities.invokeLater(new Runnable()
+                                    {
+                                       public void run()
+                                       {
+                                          log.setText(String.join("\n", lines));
+                                       }
+                                    }
+                                    );
       }
    }
 
