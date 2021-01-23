@@ -122,14 +122,14 @@ Usage:
       Maze maker parameters:
         [-numDoors <quantity> (default=3)]
         [-mazeInteriorLength <length> (default=4)]
-        [-numContextMazes <quantity> (default=5)]
-        [-numIndependentMazes <quantity> (default=2)]
+        [-numContextMazes <quantity> (default=10)]
+        [-numIndependentMazes <quantity> (default=10)]
       Morphognosis parameters:
         [-neighborhoodDurations <comma-separated values> (implies number of neighborhoods)]
       Metamorph Weka neural network parameters:
         [-NNlearningRate <quantity> (default=0.1)]
         [-NNmomentum <quantity> (default=0.2)]
-        [-NNhiddenLayers <quantity> (default="50")]
+        [-NNhiddenLayers <string of comma-separated numbers specifying number of neurons in each layer> (default="63")]
         [-NNtrainingTime <quantity> (default=5000)]
   Print parameters:
     java morphognosis.maze.Main -printParameters
