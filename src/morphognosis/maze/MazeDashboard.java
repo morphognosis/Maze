@@ -125,6 +125,17 @@ public class MazeDashboard extends JFrame
    }
 
 
+   // Disable controls.
+   public void disableControls()
+   {
+      setStepDelay(MAX_STEP_DELAY);
+      speedControl.speedSlider.setValue(MAX_STEP_DELAY);
+      timer = 0;
+      speedControl.speedSlider.setEnabled(false);
+      speedControl.stepButton.setEnabled(false);
+   }
+
+
    // Set step delay.
    public void setStepDelay(int delay)
    {
@@ -181,17 +192,17 @@ public class MazeDashboard extends JFrame
 
 
    // Speed control panel.
-   class SpeedControl extends JPanel implements ActionListener, ChangeListener
+   public class SpeedControl extends JPanel implements ActionListener, ChangeListener
    {
       private static final long serialVersionUID = 0L;
 
       // Components.
-      JLabel  stepCounter;
-      JSlider speedSlider;
-      JButton stepButton;
+      public JLabel  stepCounter;
+      public JSlider speedSlider;
+      public JButton stepButton;
 
       // Constructor.
-      SpeedControl()
+      public SpeedControl()
       {
          add(new JLabel("Speed:   Fast", Label.RIGHT));
          speedSlider = new JSlider(JSlider.HORIZONTAL, MIN_STEP_DELAY,
@@ -208,13 +219,13 @@ public class MazeDashboard extends JFrame
 
 
       // Update step counter display.
-      void updateStepCounter(int step)
+      public void updateStepCounter(int step)
       {
          stepCounter.setText("Step: " + step);
       }
 
 
-      void updateStepCounter(int step, int steps)
+      public void updateStepCounter(int step, int steps)
       {
          stepCounter.setText("Step: " + step + "/" + steps);
       }

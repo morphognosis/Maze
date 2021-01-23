@@ -27,7 +27,7 @@ public class Parameters
    // Metamorph neural network parameters.
    public static double NN_LEARNING_RATE = 0.1;
    public static double NN_MOMENTUM      = 0.2;
-   public static String NN_HIDDEN_LAYERS = "50";
+   public static String NN_HIDDEN_LAYERS = (NUM_DOORS + (NUM_DOORS * NUM_CONTEXT_MAZES) + (NUM_DOORS * NUM_INDEPENDENT_MAZES)) + "";
    public static int    NN_TRAINING_TIME = 5000;
 
    // Save.

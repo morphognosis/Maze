@@ -58,7 +58,7 @@ public class Main
       "      Metamorph Weka neural network parameters:\n" +
       "        [-NNlearningRate <quantity> (default=" + Parameters.NN_LEARNING_RATE + ")]\n" +
       "        [-NNmomentum <quantity> (default=" + Parameters.NN_MOMENTUM + ")]\n" +
-      "        [-NNhiddenLayers <quantity> (default=\"" + Parameters.NN_HIDDEN_LAYERS + "\")]\n" +
+      "        [-NNhiddenLayers <string of comma-separated numbers specifying number of neurons in each layer> (default=\"" + Parameters.NN_HIDDEN_LAYERS + "\")]\n" +
       "        [-NNtrainingTime <quantity> (default=" + Parameters.NN_TRAINING_TIME + ")]\n" +
       "  Print parameters:\n" +
       "    java morphognosis.maze.Main -printParameters\n" +
@@ -204,6 +204,7 @@ public class Main
       mazeDashboard.log(message);
 
       // Wait for quit.
+      mazeDashboard.disableControls();
       while (mazeDashboard.update()) {}
    }
 
