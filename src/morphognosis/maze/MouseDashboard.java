@@ -8,6 +8,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.TextArea;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -17,7 +18,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-
 import morphognosis.MorphognosticDisplay;
 
 public class MouseDashboard extends JFrame
@@ -96,7 +96,7 @@ public class MouseDashboard extends JFrame
       private static final long serialVersionUID = 0L;
 
       // Components.
-      public JTextField sensorsText;
+      public TextArea   sensorsText;
       public JTextField responseText;
       public JTextField responseDriverText;
 
@@ -111,7 +111,7 @@ public class MouseDashboard extends JFrame
          panel.setLayout(new FlowLayout(FlowLayout.LEFT));
          add(panel, BorderLayout.NORTH);
          panel.add(new JLabel("Sensors:"));
-         sensorsText = new JTextField(20);
+         sensorsText = new TextArea("", 1, 40, TextArea.SCROLLBARS_HORIZONTAL_ONLY);
          sensorsText.setEditable(false);
          panel.add(sensorsText);
          JPanel responsePanel = new JPanel();

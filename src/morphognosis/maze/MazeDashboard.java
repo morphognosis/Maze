@@ -31,6 +31,7 @@ public class MazeDashboard extends JFrame
 
    // Run log.
    public TextArea log;
+   private Object  loglock;
 
    // Speed control.
    public SpeedControl speedControl;
@@ -72,6 +73,7 @@ public class MazeDashboard extends JFrame
       log = new TextArea("", 20, 80, TextArea.SCROLLBARS_BOTH);
       log.setEditable(false);
       basePanel.add(log, BorderLayout.NORTH);
+      loglock = new Object();
 
       // Create speed control.
       speedControl = new SpeedControl();
@@ -146,7 +148,10 @@ public class MazeDashboard extends JFrame
                                  {
                                     public void run()
                                     {
-                                       log.append(event + "\n");
+                                       synchronized (loglock)
+                                       {
+                                          log.append(event + "\n");
+                                       }
                                     }
                                  }
                                  );
@@ -156,19 +161,22 @@ public class MazeDashboard extends JFrame
    // Overwrite last log line.
    public void logLast(final String event)
    {
-      String [] lines = log.getText().split("\n");
-      if (lines.length > 0)
-      {
-         lines[lines.length - 1] = event + "\n";
-         SwingUtilities.invokeLater(new Runnable()
+      SwingUtilities.invokeLater(new Runnable()
+                                 {
+                                    public void run()
                                     {
-                                       public void run()
+                                       synchronized (loglock)
                                        {
-                                          log.setText(String.join("\n", lines));
+                                          String [] lines = log.getText().split("\n");
+                                          if (lines.length > 0)
+                                          {
+                                             lines[lines.length - 1] = event + "\n";
+                                             log.setText(String.join("\n", lines));
+                                          }
                                        }
                                     }
-                                    );
-      }
+                                 }
+                                 );
    }
 
 
