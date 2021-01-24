@@ -14,9 +14,6 @@ for (( numDoors=${MIN_NUM_DOORS}; numDoors <= $MAX_NUM_DOORS; ++numDoors)); do
   for (( mazeInteriorLength=${MIN_MAZE_INTERIOR_LENGTH}; mazeInteriorLength <= $MAX_MAZE_INTERIOR_LENGTH; ++mazeInteriorLength)); do
     for (( numContextMazes=${MIN_CONTEXT_MAZES}; numContextMazes <= $MAX_CONTEXT_MAZES; ++numContextMazes)); do
       for (( numIndependentMazes=${MIN_NUM_INDEPENDENT_MAZES}; numIndependentMazes <= $MAX_NUM_INDEPENDENT_MAZES; ++numIndependentMazes)); do
-        a=`expr $numDoors \* $numContextMazes`
-        b=`expr $numDoors \* $numIndependentMazes`
-        NNhiddenLayers=`expr $numDoors + $a + $b`
         trials=10
        for (( i=0; i< $trials; ++i)); do
             randomSeed=`expr $i + 4517`

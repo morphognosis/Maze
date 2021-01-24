@@ -129,7 +129,7 @@ Usage:
       Metamorph Weka neural network parameters:
         [-NNlearningRate <quantity> (default=0.1)]
         [-NNmomentum <quantity> (default=0.2)]
-        [-NNhiddenLayers <string of comma-separated numbers specifying number of neurons in each layer> (default="63")]
+        [-NNhiddenLayers <string of comma-separated numbers specifying number of neurons in each layer> (default="100")]
         [-NNtrainingTime <quantity> (default=5000)]
   Print parameters:
     java morphognosis.maze.Main -printParameters
