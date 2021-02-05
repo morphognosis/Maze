@@ -3,22 +3,23 @@
 This project compares the maze-learning performance of two artificial neural network architectures: a Long Short-Term Memory (LSTM)
 recurrent network, and Morphognosis, a neural network based on a hierarchy of spatial and temporal contexts.
  
-The mazes are sequences of distinctly marked rooms interconnected by doors. Mazes are used to examine two important problems related 
-to artificial neural networks: (1) the retention of long-term state information and (2) the modular use of learned information. 
-Addressing the former, mazes impose a context learning demand: at the beginning of the maze, an initial door choice forms a context 
-that must be retained until the end of the maze, where the same door must be chosen again in order to reach the goal. For the latter, 
-the effect of modular and non-modular training is examined. In modular training, the door-associations are trained in separate trials 
-from the intervening maze paths, and only presented together in testing trials.
+A maze is a sequence of rooms connected by doors. The modular task is implemented as follows: at the beginning 
+of the maze, an initial door choice forms a context that must be retained until the end of an intervening maze, 
+where the same door must be chosen again in order to reach the goal. For training, door-associations with and 
+without intervening mazes are learned. Separately trained mazes are also learned as maze modules. For testing, 
+maze modules are incorporated as intervening mazes between door-associations for the first time. Success is 
+achieved if a modular maze is successfully navigated and the door-association context is retained such that 
+the correct door is chosen at the end of the task.
 
 This work is a continuation of a previous project. See references.
 
 ## Description.
 
-There are three learning goals:
+There are three learning tasks:
 1. Maze learning: learn to navigate a sequence of rooms connected by doors.
 2. Context learning: learn correspondences between room configurations separated
    by intervening mazes.
-3. Modular context learning: the intervening mazes are trained independently and
+3. Modular learning: the intervening mazes are trained independently and
    presenting only during testing. This measures the ability to dynamically combine
    independently learned sequences to achieve success.
 

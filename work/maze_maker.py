@@ -4,11 +4,11 @@
 # 
 # Make mazes for training and testing maze learning.
 # 
-# There are three learning goals:
+# There are three learning tasks:
 # 1. Maze learning: learn to navigate a sequence of rooms connected by doors.
 # 2. Context learning: learn correspondences between room configurations separated
 #    by intervening mazes.
-# 3. Modular context learning: the intervening mazes are trained independently and
+# 3. Modular learning: the intervening mazes are trained independently and
 #    presenting only during testing. This measures the ability to dynamically combine
 #    independently learned sequences to achieve success.
 #
