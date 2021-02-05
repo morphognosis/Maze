@@ -22,7 +22,7 @@ public class Parameters
    public static int[][] NEIGHBORHOOD_DIMENSIONS =
    { { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 },
      { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 },
-     {1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 } };   
+     { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 }, { 1, 1 } };
    public static int[] NEIGHBORHOOD_DURATIONS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
    // Metamorph neural network parameters.
