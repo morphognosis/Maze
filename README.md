@@ -155,4 +155,4 @@ https://www.sciencedirect.com/science/article/abs/pii/S0893608009002871?via%3Dih
 Thomas E. Portegys, "Generating an artificial nest building pufferfish in a cellular automaton through behavior decomposition", International Journal of Artificial Intelligence and Machine Learning, 2019.
  
 Thomas E. Portegys, "Morphognostic honey bees communicating nectar location through dance movements", preprint.
-https://www.researchgate.net/publication/339899154_MORPHOGNOSTIC_HONEY_BEES_COMMUNICATING_NECTAR_LOCATION_THROUGH_DANCE_MOVEMENTS 
+https://www.researchgate.net/publication/339899154_MORPHOGNOSTIC_HONEY_BEES_COMMUNICATING_NECTAR_LOCATION_THROUGH_DANCE_MOVEMENTS
